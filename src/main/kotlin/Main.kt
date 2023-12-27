@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.res.loadImageBitmap
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import java.io.File
@@ -29,10 +30,7 @@ fun App() {
 }
 
 fun main() = application {
-    val MainIcon = File("C:\\Users\\merlin\\Documents\\SimpleSender\\src\\main\\resources\\Icons\\PaperPlane.png")
-    val input = FileInputStream(MainIcon)
-    val bitmap = loadImageBitmap(input)
-    Window(onCloseRequest = ::exitApplication, title = "SimpleSender", icon = BitmapPainter(bitmap)) {
+    Window(onCloseRequest = ::exitApplication, title = "SimpleSender", icon = painterResource("Icons/PaperPlane.png")) {
         App()
 
     }
