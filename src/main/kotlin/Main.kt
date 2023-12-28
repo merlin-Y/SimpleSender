@@ -7,13 +7,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.painter.BitmapPainter
-import androidx.compose.ui.res.loadImageBitmap
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
-import java.io.File
-import java.io.FileInputStream
+import cn.merlin.database.DeviceDB
 
 @Composable
 @Preview
@@ -31,6 +28,8 @@ fun App() {
 
 fun main() = application {
     Window(onCloseRequest = ::exitApplication, title = "SimpleSender", icon = painterResource("Icons/PaperPlane.png")) {
+        val deviceDB = DeviceDB()
+
         App()
 
     }

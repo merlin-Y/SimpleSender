@@ -3,7 +3,6 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 plugins {
     kotlin("jvm")
     id("org.jetbrains.compose")
-//    id("kotlin-kapt")
 }
 
 group = "cn.merlin"
@@ -23,6 +22,13 @@ dependencies {
     implementation(compose.desktop.currentOs)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.5.0")
+    implementation("org.jetbrains.compose.material3:material3-desktop:1.5.11")
+    implementation("org.jetbrains.exposed:exposed-core:0.45.0")
+    implementation("org.jetbrains.exposed:exposed-dao:0.45.0")
+    implementation("org.jetbrains.exposed:exposed-jdbc:0.45.0")
+    implementation("org.xerial:sqlite-jdbc:3.41.2.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0-RC2")
+
 }
 
 compose.desktop {
