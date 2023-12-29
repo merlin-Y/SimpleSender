@@ -43,7 +43,7 @@ fun MainTheme(
     data: Preferences = Data,
     content: @Composable ()->Unit
 ){
-    val useDarkTheme: Boolean = data.getBoolean("useDarkTheme",false)
+    val useDarkTheme: Boolean = data.getBoolean("useDarkTheme",true)
 
 
     MaterialTheme(
