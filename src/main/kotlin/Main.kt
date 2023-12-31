@@ -1,9 +1,9 @@
-package cn.merlin
-
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -50,7 +50,7 @@ fun main() = application {
                     } }
             ) {
                 Column {
-                    Button(
+                    IconButton(
                         modifier = Modifier
                             .padding(start = 10.dp, top = 10.dp)
                             .height(22.5.dp)
