@@ -1,68 +1,53 @@
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material3.ButtonColors
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.Text
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import cn.merlin.layout.component.TittleBar
+import cn.merlin.layout.theme.AppColorsProvider
 import cn.merlin.layout.theme.MainTheme
+import cn.merlin.layout.theme.isUserDarkThemeOn
+import cn.merlin.utils.Settings
+import cn.merlin.utils.checkIfContain
+import org.jetbrains.exposed.sql.Column
+import java.util.prefs.Preferences
+import javax.naming.Context
 
 
 fun main() = application {
     val windowstate = rememberWindowState()
-    var offsetX by remember { mutableStateOf(0f) }
-    var offsetY by remember { mutableStateOf(0f) }
+    val offsetX = mutableStateOf(0f)
+    val offsetY = mutableStateOf(0f)
+    val data = Preferences.userRoot()
 
-    MainTheme {
+    if(!checkIfContain(data, "useDarkTheme")) data.putBoolean("useDarkTheme", false)
+
+    Settings.set("useDarkTheme", mutableStateOf(data.getBoolean("useDarkTheme", isSystemInDarkTheme() || data.getBoolean("useDarkTheme", false))))
+
+    MainTheme(Settings) {
         Window(
             onCloseRequest = ::exitApplication,
-//            title = "SimpleSender",
+            title = "SimpleSender",
             icon = painterResource("Icons/PaperPlane.png"),
             state = windowstate,
             undecorated = true
         ){
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(47.5.dp)
-                    .background(MaterialTheme.colors.primary)
-                    .pointerInput(Unit){
-                    detectDragGestures { change, dragAmount ->
-                        change.consume()
-                        offsetX += dragAmount.x
-                        offsetY += dragAmount.y
-                        windowstate.position = WindowPosition(windowstate.position.x +offsetX.toDp(),windowstate.position.y + offsetY.toDp())
-                    } }
-            ) {
-                Column {
-                    IconButton(
-                        modifier = Modifier
-                            .padding(start = 10.dp, top = 10.dp)
-                            .height(22.5.dp)
-                            .width(25.dp),
-                        onClick = {
-
-                        }
-                    ){
-                        Image(painterResource("Icons/PaperPlane.png"),"", modifier = Modifier.height(22.5.dp).width(25.dp).padding(0.dp))
-                    }
+            Column(){
+                TittleBar("Icons/PaperPlane.png","SimpleSender",offsetX,offsetY,windowstate)
+                Button(onClick = {
+                    Settings.set("useDarkTheme" , mutableStateOf(!Settings.getValue("useDarkTheme").value))
+                    data.putBoolean("useDarkTheme", Settings.getValue("useDarkTheme").value)
+                    isUserDarkThemeOn.value = !isUserDarkThemeOn.value
+                }){
+                    println(AppColorsProvider.current.topBar.value)
+                    Text(if(Settings.getValue("useDarkTheme").value) "turn on" else "turn off")
                 }
             }
+
         }
     }
 }

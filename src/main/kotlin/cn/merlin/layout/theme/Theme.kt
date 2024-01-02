@@ -1,54 +1,52 @@
 package cn.merlin.layout.theme
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.TweenSpec
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.darkColors
-import androidx.compose.material.lightColors
-import androidx.compose.runtime.Composable
-import cn.merlin.database.Data
+import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateMap
+import cn.merlin.layout.theme.color.AppColors
+import cn.merlin.layout.theme.color.palette.DarkColors
+import cn.merlin.layout.theme.color.palette.LightColors
+import cn.merlin.utils.checkIfContain
 import java.util.prefs.Preferences
 
-private val LightColors = lightColors(
-    primary = md_theme_light_primary,
-    onPrimary = md_theme_light_onPrimary,
-    primaryVariant = md_theme_light_primaryContainer,
-    secondary = md_theme_light_secondary,
-    onSecondary = md_theme_light_onSecondary,
-    secondaryVariant = md_theme_light_secondaryContainer,
-    error = md_theme_light_error,
-    onError = md_theme_light_onError,
-    background = md_theme_light_background,
-    onBackground = md_theme_light_onBackground,
-    surface = md_theme_light_surface,
-    onSurface = md_theme_light_onSurface,
-)
-
-
-private val DarkColors = darkColors(
-    primary = md_theme_dark_primary,
-    onPrimary = md_theme_dark_onPrimary,
-    primaryVariant = md_theme_dark_primaryContainer,
-    secondary = md_theme_dark_secondary,
-    onSecondary = md_theme_dark_onSecondary,
-    secondaryVariant = md_theme_dark_secondaryContainer,
-    error = md_theme_dark_error,
-    onError = md_theme_dark_onError,
-    background = md_theme_dark_background,
-    onBackground = md_theme_dark_onBackground,
-    surface = md_theme_dark_surface,
-    onSurface = md_theme_dark_onSurface,
-)
-
+val AppColorsProvider = compositionLocalOf { LightColors }
+val isUserDarkThemeOn =  mutableStateOf(false)
+//val themeTypeState: MutableState<Int> by lazy(mode = LazyThreadSafetyMode.SYNCHRONIZED) {
+//    mutableStateOf()
+//}
+const val TWEEN_DURATION = 200
 @Composable
 fun MainTheme(
-    data: Preferences = Data,
+    Settings: SnapshotStateMap<String, MutableState<Boolean>>,
     content: @Composable ()->Unit
 ){
-    val useDarkTheme: Boolean = data.getBoolean("useDarkTheme",true)
 
+    val useDarkTheme = remember { mutableStateOf(Settings.getValue("useDarkTheme").value) }
+    useDarkTheme.value = isUserDarkThemeOn.value
+    val targetColors = if(useDarkTheme.value) DarkColors else LightColors
 
-    MaterialTheme(
-        colors = if(!useDarkTheme)  LightColors else DarkColors,
-        content = content,
-        shapes = Shapes
+    val topBar = animateColorAsState(targetColors.topBar,TweenSpec(TWEEN_DURATION))
+    val primary = animateColorAsState(targetColors.primary, TweenSpec(TWEEN_DURATION))
+    val onPrimary = animateColorAsState(targetColors.onPrimary,TweenSpec(TWEEN_DURATION))
+    val onPrimaryStable = animateColorAsState(targetColors.onPrimaryStable,TweenSpec(TWEEN_DURATION))
+    val secondary = animateColorAsState(targetColors.secondary, TweenSpec(TWEEN_DURATION))
+    val onSecondary = animateColorAsState(targetColors.onSecondary, TweenSpec(TWEEN_DURATION))
+
+    val appColors = AppColors(
+        topBar = topBar.value,
+        primary = primary.value,
+        onPrimary = onPrimary.value,
+        onPrimaryStable = onPrimaryStable.value,
+        secondary = secondary.value,
+        onSecondary = onSecondary.value
     )
+
+    CompositionLocalProvider(AppColorsProvider provides appColors){
+        MaterialTheme(
+            content = content,
+            shapes = Shapes
+        )
+    }
 }

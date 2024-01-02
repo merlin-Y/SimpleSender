@@ -1,4 +1,4 @@
-package cn.merlin.utils
+package cn.merlin.network
 
 import cn.merlin.bean.Device
 import cn.merlin.bean.model.DeviceModel
