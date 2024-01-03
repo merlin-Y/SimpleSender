@@ -1,5 +1,8 @@
 package cn.merlin.network
 
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import cn.merlin.bean.Device
 import cn.merlin.bean.model.DeviceModel
 import java.net.InetAddress
@@ -7,8 +10,9 @@ import java.net.InetSocketAddress
 import java.net.Socket
 import java.util.concurrent.Executors
 
-class CheckDevice(corePoolSize: Int) {
+class DetectDevice(corePoolSize: Int) {
     val threadPool = Executors.newFixedThreadPool(corePoolSize)
+    val DetectedDevices: SnapshotStateList<DeviceModel> = mutableStateListOf()
 
     fun DeviceScanner(ip: String) {
         try{
@@ -23,5 +27,9 @@ class CheckDevice(corePoolSize: Int) {
         }catch (_: Exception){
 
         }
+    }
+
+    fun addDevice(){
+        DetectedDevices.add(DeviceModel(Device(deviceName = "Redmi k50")))
     }
 }
