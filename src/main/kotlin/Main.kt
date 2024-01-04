@@ -39,7 +39,7 @@ fun main() = application {
     val offsetX = mutableStateOf(0f)
     val offsetY = mutableStateOf(0f)
     val data = Preferences.userRoot()
-    val MenuBarWidth = animateDpAsState(if(isMenuBarPickUp.value) 60.dp else 180.dp,TweenSpec(TWEEN_DURATION))
+    val MenuBarWidth = animateDpAsState(if(isMenuBarPickUp.value) 60.dp else 180.dp,TweenSpec(400))
 
 //    NavigatorManager.navigator = rememberNavigator()
 
