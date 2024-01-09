@@ -5,13 +5,18 @@ import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
@@ -85,7 +90,7 @@ fun MenuItem(
     val textWidth = animateDpAsState(if(isMenuBarPickUp.value) 0.dp else 60.dp,TweenSpec(durationMillis = 200, delay = 200))
 
     FilledIconButton(
-        modifier = Modifier.padding(0.dp).fillMaxWidth().height(55.dp),
+        modifier = Modifier.padding(0.dp).fillMaxWidth().height(52.dp),
         shape = MaterialTheme.shapes.extraSmall,
         onClick = {}
     ){

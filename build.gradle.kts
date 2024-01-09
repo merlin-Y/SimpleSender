@@ -30,8 +30,15 @@ dependencies {
 
     implementation("org.jetbrains.exposed:exposed-core:0.45.0")
     implementation("org.jetbrains.exposed:exposed-dao:0.45.0")
+    implementation("org.jetbrains.exposed:exposed-crypt:0.45.0")
     implementation("org.jetbrains.exposed:exposed-jdbc:0.45.0")
+    implementation("org.jetbrains.exposed:exposed-kotlin-datetime:0.45.0")
+    implementation("org.jetbrains.exposed:exposed-json:0.45.0")
     implementation("org.xerial:sqlite-jdbc:3.41.2.2")
+
+    implementation("org.slf4j:slf4j-api:1.7.32")
+    implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.14.1")
+    implementation("org.apache.logging.log4j:log4j-core:2.17.1")
 }
 
 compose.desktop {

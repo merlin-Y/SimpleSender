@@ -8,4 +8,6 @@ object DeviceModel : Table() {
     var deviceIpAddress = varchar("deviceIpAddress",50)
     var deviceMacAddress = varchar("deviceMacAddress",50)
     var deviceNickName = varchar("deviceNickName",50)
+
+    override val primaryKey = PrimaryKey(deviceId,name = "deviceId")
 }

@@ -5,31 +5,22 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Surface
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.WindowState
-import androidx.compose.ui.window.application
-import androidx.compose.ui.window.rememberWindowState
+import androidx.compose.ui.window.*
+import cn.merlin.database.SenderDB
 import cn.merlin.layout.checkdevice.DetectDevice
-import cn.merlin.layout.leftMenu.MainLeftMenu
-import cn.merlin.layout.leftMenu.NavigatorManager
 import cn.merlin.layout.leftMenu.leftMenuBar
 import cn.merlin.layout.topbar.TittleBar
 import cn.merlin.layout.theme.MainTheme
-import cn.merlin.layout.theme.TWEEN_DURATION
 import cn.merlin.layout.topbar.isMenuBarPickUp
 import cn.merlin.utils.Settings
 import cn.merlin.utils.checkIfContain
 import moe.tlaster.precompose.PreComposeWindow
-import moe.tlaster.precompose.navigation.rememberNavigator
 import java.util.prefs.Preferences
 
 
@@ -39,9 +30,9 @@ fun main() = application {
     val offsetX = mutableStateOf(0f)
     val offsetY = mutableStateOf(0f)
     val data = Preferences.userRoot()
-    val MenuBarWidth = animateDpAsState(if(isMenuBarPickUp.value) 60.dp else 180.dp,TweenSpec(400))
-
-//    NavigatorManager.navigator = rememberNavigator()
+    val senderDB = SenderDB()
+    senderDB.createTables()
+    val menuBarWidth = animateDpAsState(if(isMenuBarPickUp.value) 60.dp else 180.dp,TweenSpec(400))
 
     if(!checkIfContain(data, "useDarkTheme")) data.putBoolean("useDarkTheme", isSystemInDarkTheme())
 
@@ -49,7 +40,7 @@ fun main() = application {
 
 
     MainTheme(Settings) {
-        Window(
+        PreComposeWindow(
             onCloseRequest = ::exitApplication,
             title = "SimpleSender",
             icon = painterResource("Icons/PaperPlane.png"),
@@ -57,7 +48,7 @@ fun main() = application {
             undecorated = true,
             resizable = false
         ){
-            App(MenuBarWidth.value,offsetX,offsetY,windowstate)
+            App(menuBarWidth.value,offsetX,offsetY,windowstate)
         }
     }
 }
@@ -68,15 +59,15 @@ private fun initImageLoader() {
 }
 
 @Composable
-fun App(MenuBarWidth: Dp,offsetX: MutableState<Float>,offsetY: MutableState<Float>,windowstate: WindowState){
+fun App(menuBarWidth: Dp, offsetX: MutableState<Float>, offsetY: MutableState<Float>, windowstate: WindowState){
     Surface(
         modifier = Modifier.background(MaterialTheme.colorScheme.primary)
     ) {
         Column(){
             TittleBar("Icons/PaperPlane.png","SimpleSender",offsetX,offsetY,windowstate)
             Row {
-                leftMenuBar(MenuBarWidth)/*  MenuBarWidth */
-                DetectDevice(900.dp - MenuBarWidth)/* 900.dp - MenuBarWidth */
+                leftMenuBar(menuBarWidth)/*  MenuBarWidth */
+                DetectDevice(900.dp - menuBarWidth)/* 900.dp - MenuBarWidth */
             }
         }
     }
