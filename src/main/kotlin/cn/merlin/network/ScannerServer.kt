@@ -2,6 +2,7 @@ package cn.merlin.network
 
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import java.io.ObjectOutputStream
 import java.net.ServerSocket
 
 class ScannerServer {
@@ -17,6 +18,8 @@ class ScannerServer {
                         val socket = serverSocket.accept()
                         println("New connection established")
                         /* TODO 处理连接响应返回设备信息 */
+                        val objectOutputStream = ObjectOutputStream(socket.getOutputStream())
+                        objectOutputStream.writeObject(CurrentDeviceInformation.getInformation())
                     }
                 }catch (_: Exception){
 

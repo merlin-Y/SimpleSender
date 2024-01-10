@@ -1,8 +1,10 @@
 package cn.merlin.bean
 
-class Device(
-    val deviceName: String = "",
-    val deviceIpAddress: String = "",
-    val deviceMacAddress: String = "",
-    val deviceNickName: String = ""
-)
+import java.io.Serializable
+
+data class Device(
+    var deviceName: String = "",
+    var deviceIpAddress: String = "",
+    var deviceMacAddress: String = "",
+    var deviceNickName: String = ""
+): Serializable

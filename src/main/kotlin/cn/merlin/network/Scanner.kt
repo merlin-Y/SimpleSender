@@ -6,32 +6,35 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import cn.merlin.bean.Device
 import cn.merlin.bean.model.DeviceModel
 import kotlinx.coroutines.*
+import java.io.ObjectInputStream
 import java.net.InetSocketAddress
 import java.net.NetworkInterface
 import java.net.Socket
 
 class Scanner() {
     val DetectedDevices: SnapshotStateList<DeviceModel> = mutableStateListOf()
-    val currentIpAddress = mutableStateOf("")
+//    val DetectedAddresses: SnapshotStateList<String> = mutableStateListOf()
+    var currentDevice = Device()
 
-    suspend fun detectAddress() {
-        val ipAddresses = mutableStateListOf<String>()
-
-        getCurrentIpAddress()
-
+    suspend fun detectDevices() {
+        currentDevice = CurrentDeviceInformation.getInformation()
         coroutineScope {
-            val ipAddressIndex = currentIpAddress.value.substring(0, currentIpAddress.value.lastIndexOf("."))
+            val ipAddressIndex = currentDevice.deviceIpAddress.substring(0, currentDevice.deviceIpAddress.lastIndexOf("."))
             println("Scanning from $ipAddressIndex.1~$ipAddressIndex.255")
             for (i in 1..255) {
                 launch {
                     val host = "$ipAddressIndex.$i"
-                    if(host == currentIpAddress.value)  cancel()
+                    if(host == currentDevice.deviceIpAddress)  cancel()
                     try {
                         val socket = Socket()
                         withContext(Dispatchers.IO) {
                             socket.connect(InetSocketAddress(host, 19999), 100)
+                            val objectInputStream = ObjectInputStream(socket.getInputStream())
+                            val device = objectInputStream.readObject() as Device
+                            DetectedDevices.add(DeviceModel(device))
+                            println(device)
                         }
-                        ipAddresses.add("$ipAddressIndex.$i")
+//                        DetectedAddresses.add("$ipAddressIndex.$i")
                         socket.close()
                     } catch (e: Exception) {
 //                            print(e)
@@ -39,28 +42,7 @@ class Scanner() {
                 }
             }
         }
+        println("${currentDevice.deviceName} ${currentDevice.deviceIpAddress} ${currentDevice.deviceMacAddress}")
         println("Scanning accomplished")
-    }
-
-    private suspend fun getCurrentIpAddress() {
-        coroutineScope {
-            launch {
-                try {
-                    val networkInterface = NetworkInterface.getNetworkInterfaces()
-                    while (networkInterface.hasMoreElements()) {
-                        val networkInterface = networkInterface.nextElement()
-                        val inetAddresses = networkInterface.inetAddresses
-                        while (inetAddresses.hasMoreElements()) {
-                            val inetAddress = inetAddresses.nextElement()
-                            if (!inetAddress.isLoopbackAddress && inetAddress.hostAddress.contains("192.168.")) {
-                                currentIpAddress.value = inetAddress.hostAddress
-                            }
-                        }
-                    }
-                } catch (_: Exception) {
-
-                }
-            }
-        }
     }
 }

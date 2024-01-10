@@ -8,15 +8,15 @@ fun main() {
         val scanner = Scanner()
         val coroutineScope = CoroutineScope(Dispatchers.Default)
 
-        val job1 = coroutineScope.launch {
-            scannerServer.startServer()
-        }
+//        val job1 = coroutineScope.launch {
+//            scannerServer.startServer()
+//        }
 
         val job2 = coroutineScope.launch {
-            scanner.detectAddress()
+            scanner.detectDevices()
         }
 
-        job1.join()
+//        job1.join()
         job2.join()
 
         coroutineScope.cancel()
