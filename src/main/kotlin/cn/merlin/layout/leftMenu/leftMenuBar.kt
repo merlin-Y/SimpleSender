@@ -5,18 +5,12 @@ import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
@@ -24,8 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cn.merlin.layout.theme.TWEEN_DURATION
 import cn.merlin.layout.topbar.isMenuBarPickUp
-import org.succlz123.lib.imageloader.ImageRes
-import org.succlz123.lib.imageloader.core.ImageCallback
+import cn.merlin.network.Sender
 
 @Composable
 fun leftMenuBar(
@@ -92,7 +85,14 @@ fun MenuItem(
     FilledIconButton(
         modifier = Modifier.padding(0.dp).fillMaxWidth().height(52.dp),
         shape = MaterialTheme.shapes.extraSmall,
-        onClick = {}
+        onClick = {
+            if(text == "搜索设备"){
+//                CoroutineScope(Dispatchers.IO).launch {
+                    val scanner = Sender()
+                    scanner.detectDevices()
+//                }
+            }
+        }
     ){
         Row {
 //            ImageRes(Icon,

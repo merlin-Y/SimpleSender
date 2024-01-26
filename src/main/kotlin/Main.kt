@@ -18,10 +18,10 @@ import cn.merlin.layout.leftMenu.leftMenuBar
 import cn.merlin.layout.topbar.TittleBar
 import cn.merlin.layout.theme.MainTheme
 import cn.merlin.layout.topbar.isMenuBarPickUp
+import cn.merlin.network.Sender
+import cn.merlin.network.SenderServer
 import cn.merlin.utils.Settings
 import cn.merlin.utils.checkIfContain
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import moe.tlaster.precompose.PreComposeWindow
 import java.util.prefs.Preferences
 
@@ -33,8 +33,11 @@ fun main() = application {
     val offsetY = mutableStateOf(0f)
     val data = Preferences.userRoot()
     val senderDB = SenderDB()
+
+    val scanner = Sender()
+    val scannerServer = SenderServer()
     val menuBarWidth = animateDpAsState(if(isMenuBarPickUp.value) 60.dp else 180.dp,TweenSpec(400))
-    val coroutineScope = CoroutineScope(Dispatchers.Default)
+
 
     if(!checkIfContain(data, "useDarkTheme")) data.putBoolean("useDarkTheme", isSystemInDarkTheme())
 
@@ -50,6 +53,7 @@ fun main() = application {
             undecorated = true,
             resizable = false
         ){
+            scannerServer.startServer()
             App(menuBarWidth.value,offsetX,offsetY,windowstate)
         }
     }

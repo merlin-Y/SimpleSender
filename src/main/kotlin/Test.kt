@@ -1,24 +1,17 @@
-import cn.merlin.network.Scanner
-import cn.merlin.network.ScannerServer
-import kotlinx.coroutines.*
+import cn.merlin.bean.Device
+import cn.merlin.bean.model.DeviceModel
+import cn.merlin.network.Sender
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import java.io.File
 
 fun main() {
+    val sender = Sender()
+    val file = File("D:/file.zip")
+    val job = sender.sendFileToSelectedDevice(DeviceModel(Device(deviceIpAddress = "127.0.0.1")),file)
     runBlocking {
-        val scannerServer = ScannerServer()
-        val scanner = Scanner()
-        val coroutineScope = CoroutineScope(Dispatchers.Default)
-
-//        val job1 = coroutineScope.launch {
-//            scannerServer.startServer()
-//        }
-
-        val job2 = coroutineScope.launch {
-            scanner.detectDevices()
-        }
-
-//        job1.join()
-        job2.join()
-
-        coroutineScope.cancel()
+        job.join()
     }
+
 }
