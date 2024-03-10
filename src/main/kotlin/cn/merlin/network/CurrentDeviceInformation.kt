@@ -24,9 +24,7 @@ object CurrentDeviceInformation {
                     }
                 }
             }
-        } catch (_: Exception) {
-
-        }
+        } catch (_: Exception) { }
     }
 
     fun getInformation(): Device {

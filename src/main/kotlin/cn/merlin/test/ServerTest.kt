@@ -1,6 +1,8 @@
 package cn.merlin.test
 
 import java.io.File
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.ServerSocket
@@ -16,19 +18,18 @@ class ServerTest {
             while (true) {
                 val socket = serverSocket.accept()
                 println("New connection established")
-//                val objectInputStream = ObjectInputStream(socket.getInputStream())
-//                val objectOutputStream = ObjectOutputStream(socket.getOutputStream())
-                val inputStream = socket.getInputStream()
-                val outputStream = socket.getOutputStream()
-                val request = inputStream.read()
+                val objectOutputStream = ObjectOutputStream(socket.getOutputStream())
+                val objectInputStream = ObjectInputStream(socket.getInputStream())
+                val request = objectInputStream.readInt()
                 println(request)
                 if (request == 2) {
-                    outputStream.write(1)
-                    val totalPackets = inputStream.read()
+//                    outputStream.write(1)
+                    objectOutputStream.writeInt(1)
+                    val totalPackets = objectInputStream.readInt()
                     println(totalPackets)
                     val port = getFreePort()
                     receiveFile(
-                        File("C:\\Users\\merlin\\Documents\\SimpleSender\\src\\main\\resources\\file.zip"),
+                        File("C:\\Users\\merlin\\Documents\\SimpleSender\\src\\main\\resources\\files\\file.zip"),
                         port,
                         totalPackets
                     )

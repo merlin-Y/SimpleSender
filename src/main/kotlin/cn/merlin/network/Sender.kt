@@ -15,7 +15,6 @@ val DetectedDevices: SnapshotStateList<DeviceModel> = mutableStateListOf()
 
 class Sender{
 
-    //    val DetectedAddresses: SnapshotStateList<String> = mutableStateListOf()
     private var currentDevice = Device()
 
     fun detectDevices() {
@@ -28,14 +27,13 @@ class Sender{
                 if (ipAddress == currentDevice.deviceIpAddress) cancel()
                 try {
                     val socket = Socket()
-//                    withContext(Dispatchers.IO) {
                     socket.connect(InetSocketAddress(ipAddress, 19999), 100)
-                    val objectInputStream = ObjectInputStream(socket.getInputStream())
                     val objectOutputStream = ObjectOutputStream(socket.getOutputStream())
+                    val objectInputStream = ObjectInputStream(socket.getInputStream())
                     objectOutputStream.writeInt(1)
+                    objectOutputStream.flush()
                     val device = objectInputStream.readObject() as Device
                     DetectedDevices.add(DeviceModel(device))
-//                    }
                     socket.close()
                 } catch (e: Exception) {
 //                            print(e)
@@ -48,21 +46,24 @@ class Sender{
 
     fun sendFileToSelectedDevice(device: DeviceModel, file: File): Job {
         return CoroutineScope(Dispatchers.IO).launch {
-            val packetSize = 1024
+            val packetSize = 10240
             try {
                 val socket = Socket()
                 socket.connect(InetSocketAddress(device.deviceIpAddress.value,19999),100)
                 val datagramSocket = DatagramSocket()
                 val data = file.readBytes()
                 val totalPackets = ceil(data.size.toDouble() / packetSize).toInt()
-                val objectInputStream = ObjectInputStream(socket.getInputStream())
                 val objectOutputStream = ObjectOutputStream(socket.getOutputStream())
+                val objectInputStream = ObjectInputStream(socket.getInputStream())
                 objectOutputStream.writeInt(2)
+                objectOutputStream.flush()
                 val requestCode = objectInputStream.readInt()
                 if(requestCode == 1){
                     objectOutputStream.writeObject(cn.merlin.bean.File(file.name,totalPackets))
+                    objectOutputStream.flush()
                 }
                 else   this.cancel()
+                val port = objectInputStream.readInt()
                 for (i in 0 until totalPackets) {
                     val offset = i * packetSize
                     val length = if (offset + packetSize < data.size) packetSize else data.size - offset
@@ -72,7 +73,7 @@ class Sender{
                             packetData,
                             length,
                             InetAddress.getByName(device.deviceIpAddress.value),
-                            20000
+                            port
                         )
                         datagramSocket.send(packet)
                     }

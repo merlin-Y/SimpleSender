@@ -25,20 +25,23 @@ class SenderServer {
                 while (true) {
                     val socket = serverSocket.accept()
                     println("New connection established")
-                    val objectInputStream = ObjectInputStream(socket.getInputStream())
                     val objectOutputStream = ObjectOutputStream(socket.getOutputStream())
+                    val objectInputStream = ObjectInputStream(socket.getInputStream())
                     val request = objectInputStream.readInt()
                     if (request == 1) {
                         objectOutputStream.writeObject(CurrentDeviceInformation.getInformation())
+                        objectOutputStream.flush()
                     } else if (request == 2) {
                         objectOutputStream.writeInt(1)
-                        val totalPackets = objectInputStream.readObject() as cn.merlin.bean.File
+                        objectOutputStream.flush()
+                        val receivedFile = objectInputStream.readObject() as cn.merlin.bean.File
                         launch(Dispatchers.IO) {
                             val port = getFreePort()
-                            receiveFile(File(totalPackets.fileName), port, totalPackets.totalPackets)
+                            objectOutputStream.writeInt(port)
+                            objectOutputStream.flush()
+                            receiveFile(receivedFile, port)
                         }
                     }
-
                 }
             } catch (_: Exception) {
 
@@ -46,23 +49,23 @@ class SenderServer {
         }
     }
 
-    private fun receiveFile(file: File, port: Int, totalPackets: Int) {
-        val packetSize = 1024
+    private fun receiveFile(receivedFile: cn.merlin.bean.File, port: Int) {
+        val packetSize = 10240
+        var packetNumber = 0
         try {
             val socket = DatagramSocket(port)
-            val receiveData = ByteArray(totalPackets * 1024)
+            val receiveData = ByteArray(receivedFile.totalPackets * 1024)
             val receivedPackets = mutableSetOf<Int>()
-            while (receivedPackets.size < totalPackets) {
-                val buffer = ByteArray(1024)
+            while (receivedPackets.size < receivedFile.totalPackets) {
+                val buffer = ByteArray(packetSize)
                 val packet = DatagramPacket(buffer, buffer.size)
                 socket.receive(packet)
-
-                val packetNumber = packet.data[0].toInt()
-                receivedPackets.add(packetNumber)
-                val offset = packetNumber * 1024
+                val offset = packetNumber * packetSize
                 System.arraycopy(packet.data, 1, receiveData, offset, packet.length - 1)
+                receivedPackets.add(packetNumber)
+                packetNumber++
             }
-            file.writeBytes(receiveData)
+            File(receivedFile.fileName).writeBytes(receiveData)
             socket.close()
             receivedPort.remove(port)
         } catch (e: Exception) {

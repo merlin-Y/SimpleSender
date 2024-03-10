@@ -23,11 +23,12 @@ import cn.merlin.network.SenderServer
 import cn.merlin.utils.Settings
 import cn.merlin.utils.checkIfContain
 import moe.tlaster.precompose.PreComposeWindow
+import java.util.*
 import java.util.prefs.Preferences
 
-
 fun main() = application {
-    initImageLoader()
+//    initImageLoader()
+    getUserProfile()
     val windowstate = rememberWindowState(size = DpSize(height = 700.dp, width = 900.dp))
     val offsetX = mutableStateOf(0f)
     val offsetY = mutableStateOf(0f)
@@ -62,6 +63,16 @@ fun main() = application {
 private fun initImageLoader() {
 //    ImageLoader.configuration(rootDirectory = File(System.getProperty("user.home") + File.separator + "Library" + File.separator + "NCMusicDesktop"))
 //    println(System.getProperty("user.home") + File.separator + "Library" + File.separator + "NCMusicDesktop")
+}
+
+private fun getUserProfile(): String{
+    try{
+        val osName = System.getProperty("os.name")
+        println(osName)
+    }catch (_:Exception){
+
+    }
+    return ""
 }
 
 @Composable

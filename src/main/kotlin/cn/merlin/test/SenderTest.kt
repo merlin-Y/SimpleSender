@@ -1,6 +1,8 @@
 package cn.merlin.test
 
 import java.io.File
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
 import java.net.*
 import kotlin.math.ceil
 
@@ -13,15 +15,18 @@ class SenderTest {
             val datagramSocket = DatagramSocket()
             val data = file.readBytes()
             val totalPackets = ceil(data.size.toDouble() / packetSize).toInt()
-//            val objectInputStream = ObjectInputStream(socket.getInputStream())
-//            val objectOutputStream = ObjectOutputStream(socket.getOutputStream())
+            val objectInputStream = ObjectInputStream(socket.getInputStream())
+            val objectOutputStream = ObjectOutputStream(socket.getOutputStream())
             val inputStream = socket.getInputStream()
             val outputStream = socket.getOutputStream()
-            outputStream.write(2)
-            val requestCode = inputStream.read()
+            objectOutputStream.writeInt(2)
+//            outputStream.write(2)
+//            val requestCode = inputStream.read()
+            val requestCode = objectInputStream.readInt()
             println(requestCode)
             if (requestCode == 1) {
-                outputStream.write(totalPackets)
+//                outputStream.write(totalPackets)
+                objectOutputStream.writeInt(totalPackets)
             }
             for (i in 0 until totalPackets) {
                 val offset = i * packetSize
