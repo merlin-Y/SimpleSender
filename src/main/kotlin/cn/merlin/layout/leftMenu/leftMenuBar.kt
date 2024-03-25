@@ -7,6 +7,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -16,9 +17,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cn.merlin.bean.Device
+import cn.merlin.bean.model.DeviceModel
 import cn.merlin.layout.theme.TWEEN_DURATION
 import cn.merlin.layout.topbar.isMenuBarPickUp
 import cn.merlin.network.Sender
+import java.io.File
+
+val sender = Sender()
 
 @Composable
 fun leftMenuBar(
@@ -56,9 +62,44 @@ fun leftMenuBar(
                 }
             }
             LazyColumn (
-                modifier = Modifier.size(width,leftButtomMenuHeight.value)
+                modifier = Modifier
+                    .size(width,leftButtomMenuHeight.value)
+                    .padding(bottom = 20.dp),
+                horizontalAlignment = Alignment.Start
             ){
-
+                item{
+                    ListItem("Icons/computer.png","我的电脑",width)
+                }
+                item{
+                    ListItem("Icons/computer.png","我的电脑",width)
+                }
+                item{
+                    ListItem("Icons/computer.png","我的电脑",width)
+                }
+                item{
+                    ListItem("Icons/computer.png","我的电脑",width)
+                }
+                item{
+                    ListItem("Icons/computer.png","我的电脑",width)
+                }
+                item{
+                    ListItem("Icons/computer.png","我的电脑",width)
+                }
+                item{
+                    ListItem("Icons/computer.png","我的电脑",width)
+                }
+                item{
+                    ListItem("Icons/computer.png","我的电脑",width)
+                }
+                item{
+                    ListItem("Icons/computer.png","我的电脑",width)
+                }
+                item{
+                    ListItem("Icons/computer.png","我的电脑",width)
+                }
+                item{
+                    ListItem("Icons/computer.png","我的电脑",width)
+                }
             }
             Spacer(modifier = Modifier.background(MaterialTheme.colorScheme.tertiary).height(2.dp).width(width))
             Column(
@@ -77,7 +118,7 @@ fun leftMenuBar(
 fun MenuItem(
     Icon: String,
     text: String,
-    width: Dp
+    width: Dp,
 ){
     val imageWidth = animateDpAsState(if(isMenuBarPickUp.value) 20.dp else 30.dp,TweenSpec(TWEEN_DURATION))
     val textWidth = animateDpAsState(if(isMenuBarPickUp.value) 0.dp else 60.dp,TweenSpec(durationMillis = 200, delay = 200))
@@ -86,22 +127,42 @@ fun MenuItem(
         modifier = Modifier.padding(0.dp).fillMaxWidth().height(52.dp),
         shape = MaterialTheme.shapes.extraSmall,
         onClick = {
-            if(text == "搜索设备"){
-//                CoroutineScope(Dispatchers.IO).launch {
-                    val scanner = Sender()
-                    scanner.detectDevices()
-//                }
+                if (text == "搜索设备") {
+                    sender.detectDevices()
+                }
             }
+    ){
+        Row {
+            Image(painter = painterResource(Icon), contentDescription = text, modifier = Modifier.size(imageWidth.value))
+            AnimatedVisibility(
+                visible = !isMenuBarPickUp.value,
+                enter = scaleIn(TweenSpec(durationMillis = 200, delay = 200)) ,
+                exit = scaleOut(TweenSpec(durationMillis = 200, delay = 200)) + fadeOut(TweenSpec(100))
+            ) {
+                Text(text = text, modifier = Modifier.padding(start = 10.dp).width(textWidth.value), fontSize = 14.sp, maxLines = 1)
+            }
+        }
+    }
+}
+
+@Composable
+fun ListItem(
+    Icon: String,
+    text: String,
+    width: Dp,
+){
+    val imageWidth = animateDpAsState(if(isMenuBarPickUp.value) 20.dp else 30.dp,TweenSpec(TWEEN_DURATION))
+    val textWidth = animateDpAsState(if(isMenuBarPickUp.value) 0.dp else 60.dp,TweenSpec(durationMillis = 200, delay = 200))
+
+    FilledIconButton(
+        modifier = Modifier.padding(0.dp).fillMaxWidth().height(52.dp),
+        shape = MaterialTheme.shapes.extraSmall,
+        onClick = {
+
         }
     ){
         Row {
-//            ImageRes(Icon,
-//                imageCallback = ImageCallback {
-//                    Image(modifier = Modifier.size(30.dp), painter = it, contentDescription = "res")
-//                })
-//            val density = LocalDensity.current
             Image(painter = painterResource(Icon), contentDescription = text, modifier = Modifier.size(imageWidth.value))
-//            Text(text = text, modifier = Modifier.padding(start = 10.dp).width(100.dp-imageWidth.value), fontSize = 14.sp)
             AnimatedVisibility(
                 visible = !isMenuBarPickUp.value,
                 enter = scaleIn(TweenSpec(durationMillis = 200, delay = 200)) ,

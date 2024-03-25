@@ -23,17 +23,18 @@ class ServerTest {
                 val request = objectInputStream.readInt()
                 println(request)
                 if (request == 2) {
-//                    outputStream.write(1)
                     objectOutputStream.writeInt(1)
+                    objectOutputStream.flush()
                     val totalPackets = objectInputStream.readInt()
                     println(totalPackets)
                     val port = getFreePort()
                     receiveFile(
-                        File("C:\\Users\\merlin\\Documents\\SimpleSender\\src\\main\\resources\\files\\file.zip"),
+                        File("C:\\Users\\merlin\\Documents\\SimpleSender\\src\\main\\resources\\file.zip"),
                         port,
                         totalPackets
                     )
                 }
+                socket.close()
             }
         } catch (_: Exception) {
 

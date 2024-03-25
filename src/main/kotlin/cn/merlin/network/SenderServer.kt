@@ -34,14 +34,15 @@ class SenderServer {
                     } else if (request == 2) {
                         objectOutputStream.writeInt(1)
                         objectOutputStream.flush()
-                        val receivedFile = objectInputStream.readObject() as cn.merlin.bean.File
-                        launch(Dispatchers.IO) {
-                            val port = getFreePort()
-                            objectOutputStream.writeInt(port)
-                            objectOutputStream.flush()
-                            receiveFile(receivedFile, port)
-                        }
+                        val receiveFile = objectInputStream.readObject() as cn.merlin.bean.File
+                        receiveFile.fileName =
+                            "C:\\Users\\merlin\\Documents\\SimpleSender\\src\\main\\resources\\files\\receivedFile.zip"
+                        val port = getFreePort()
+                        objectOutputStream.writeInt(port)
+                        objectOutputStream.flush()
+                        receiveFile(receiveFile, port)
                     }
+                    socket.close()
                 }
             } catch (_: Exception) {
 

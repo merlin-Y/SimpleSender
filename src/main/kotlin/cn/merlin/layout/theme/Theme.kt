@@ -2,15 +2,16 @@ package cn.merlin.layout.theme
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.TweenSpec
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
+import cn.merlin.utils.Settings
+import cn.merlin.utils.followSystemTheme
 
-val isReversedTheme = mutableStateOf(false)
 
 const val TWEEN_DURATION = 500
 
@@ -80,15 +81,14 @@ private val DarkColors = darkColorScheme(
 
 @Composable
 fun MainTheme(
-    Settings: SnapshotStateMap<String, MutableState<Boolean>>,
     content: @Composable ()->Unit
 ){
 
-    val useDarkTheme = remember { mutableStateOf(Settings.getValue("useDarkTheme").value) }
-    if(isReversedTheme.value){
-        useDarkTheme.value = !useDarkTheme.value
-        isReversedTheme.value = false
-    }
+    val useDarkTheme = mutableStateOf(when{
+        followSystemTheme.value -> isSystemInDarkTheme()
+        Settings["userTheme"]?.value == 1 -> true
+        else -> false
+    })
     val targetColors = if(useDarkTheme.value) DarkColors else LightColors
 
     val primary = animateColorAsState(targetColors.primary,TweenSpec(TWEEN_DURATION))

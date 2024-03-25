@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.*
 //import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -18,12 +16,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
-import androidx.compose.ui.window.application
 import kotlin.system.exitProcess
 
 val isMenuBarPickUp = mutableStateOf(false)
@@ -34,23 +30,26 @@ fun TittleBar(
     title: String,
     offsetX: MutableState<Float>,
     offsetY: MutableState<Float>,
-    windowstate: WindowState
-){
-    val appIconStartDp = animateDpAsState(if(isMenuBarPickUp.value) 20.dp else 0.dp)
+    windowState: WindowState
+) {
+    val appIconStartDp = animateDpAsState(if (isMenuBarPickUp.value) 20.dp else 0.dp)
 
     Surface(
         color = MaterialTheme.colorScheme.primary,
         modifier = Modifier
             .fillMaxWidth()
             .height(42.dp)
-//            .background(AppColorsProvider.current.topBar)
-            .pointerInput(Unit){
+            .pointerInput(Unit) {
                 detectDragGestures { change, dragAmount ->
                     change.consume()
                     offsetX.value += dragAmount.x
                     offsetY.value += dragAmount.y
-                    windowstate.position = WindowPosition(windowstate.position.x + offsetX.value.toDp(),windowstate.position.y + offsetY.value.toDp())
-                } }
+                    windowState.position = WindowPosition(
+                        windowState.position.x + offsetX.value.toDp(),
+                        windowState.position.y + offsetY.value.toDp()
+                    )
+                }
+            }
     ) {
         Row {
             FilledIconButton(
@@ -59,24 +58,26 @@ fun TittleBar(
                 onClick = {
                     isMenuBarPickUp.value = !isMenuBarPickUp.value
                 }
-            ){
+            ) {
                 Icon(
                     Icons.Filled.Menu, "",
                     tint = Color.White,
                     modifier = Modifier.height(25.dp).width(25.dp).padding(0.dp)
-                )}
+                )
+            }
             FilledIconButton(
                 shape = MaterialTheme.shapes.extraSmall,
                 modifier = Modifier.padding(start = appIconStartDp.value),
                 onClick = {
 
                 }
-            ){
-                Image(painterResource(icon),"", modifier = Modifier.height(20.dp).width(20.dp).padding(0.dp))
+            ) {
+                Image(painterResource(icon), "", modifier = Modifier.height(20.dp).width(20.dp).padding(0.dp))
             }
             Text(
                 title,
-                modifier = Modifier.width(windowstate.size.width - 185.dp - appIconStartDp.value).fillMaxHeight().padding(start = 10.dp),
+                modifier = Modifier.width(windowState.size.width - 185.dp - appIconStartDp.value).fillMaxHeight()
+                    .padding(start = 10.dp),
                 color = MaterialTheme.colorScheme.onPrimary,
                 fontSize = 16.sp,
                 lineHeight = 30.sp
@@ -84,18 +85,18 @@ fun TittleBar(
             FilledIconButton(
                 shape = MaterialTheme.shapes.extraSmall,
                 onClick = {
-                    windowstate.isMinimized = true
+                    windowState.isMinimized = true
                 }
-            ){
-                Icon(painterResource("Icons/minimum.webp"),"", modifier = Modifier.size(18.dp))
+            ) {
+                Icon(painterResource("Icons/minimum.webp"), "", modifier = Modifier.size(18.dp))
             }
             FilledIconButton(
                 shape = MaterialTheme.shapes.extraSmall,
                 onClick = {
                     exitProcess(0)
                 }
-            ){
-                Icon(Icons.Filled.Close,"")
+            ) {
+                Icon(Icons.Filled.Close, "")
             }
         }
     }

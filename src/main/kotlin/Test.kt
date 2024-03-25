@@ -9,6 +9,6 @@ import java.io.File
 
 fun main() {
     val senderTest = SenderTest()
-    val file = File("C:\\Users\\merlin\\Documents\\SenderTest\\src\\main\\resources\\DG5501488_x64.zip")
+    val file = File("C:\\Users\\merlin\\Documents\\SimpleSender\\src\\main\\resources\\file.zip")
     senderTest.sendFileToSelectedDevice(file)
 }

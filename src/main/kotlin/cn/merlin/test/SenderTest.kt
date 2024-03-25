@@ -17,16 +17,13 @@ class SenderTest {
             val totalPackets = ceil(data.size.toDouble() / packetSize).toInt()
             val objectInputStream = ObjectInputStream(socket.getInputStream())
             val objectOutputStream = ObjectOutputStream(socket.getOutputStream())
-            val inputStream = socket.getInputStream()
-            val outputStream = socket.getOutputStream()
             objectOutputStream.writeInt(2)
-//            outputStream.write(2)
-//            val requestCode = inputStream.read()
+            objectOutputStream.flush()
             val requestCode = objectInputStream.readInt()
             println(requestCode)
             if (requestCode == 1) {
-//                outputStream.write(totalPackets)
                 objectOutputStream.writeInt(totalPackets)
+                objectOutputStream.flush()
             }
             for (i in 0 until totalPackets) {
                 val offset = i * packetSize
@@ -41,6 +38,7 @@ class SenderTest {
                 datagramSocket.send(packet)
             }
             datagramSocket.close()
+            socket.close()
         } catch (e: Exception) {
             println(e)
         }
