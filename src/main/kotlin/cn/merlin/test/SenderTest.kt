@@ -20,7 +20,6 @@ class SenderTest {
             objectOutputStream.writeInt(2)
             objectOutputStream.flush()
             val requestCode = objectInputStream.readInt()
-            println(requestCode)
             if (requestCode == 1) {
                 objectOutputStream.writeInt(totalPackets)
                 objectOutputStream.flush()

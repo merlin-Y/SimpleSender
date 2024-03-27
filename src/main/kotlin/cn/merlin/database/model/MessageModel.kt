@@ -1,6 +1,5 @@
 package cn.merlin.database.model
 
-import cn.merlin.database.model.DeviceModel.autoIncrement
 import org.jetbrains.exposed.sql.Table
 
 object MessageModel : Table() {

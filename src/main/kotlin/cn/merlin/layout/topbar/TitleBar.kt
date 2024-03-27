@@ -61,7 +61,6 @@ fun TittleBar(
             ) {
                 Icon(
                     Icons.Filled.Menu, "",
-                    tint = Color.White,
                     modifier = Modifier.height(25.dp).width(25.dp).padding(0.dp)
                 )
             }

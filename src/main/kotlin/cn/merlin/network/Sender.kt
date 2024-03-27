@@ -62,17 +62,23 @@ class Sender {
                 objectOutputStream.flush()
                 val requestCode = objectInputStream.readInt()
                 if (requestCode == 1) {
-                    objectOutputStream.writeObject(cn.merlin.bean.File(file.name, totalPackets))
+                    objectOutputStream.writeObject(cn.merlin.bean.File(file.name, data.size,totalPackets))
                     objectOutputStream.flush()
                 } else this.cancel()
                 val port = objectInputStream.readInt()
                 for (i in 0 until totalPackets) {
                     val offset = i * packetSize
                     val length = if (offset + packetSize < data.size) packetSize else data.size - offset
-                    val packetData = data.copyOfRange(offset, length - 1)
+                    val packetData = ByteArray(packetSize + 4)
+                    packetData[0] = (i shr 8).toByte()
+                    packetData[1] = i.toByte()
+                    packetData[2] = (length shr 8).toByte()
+                    packetData[3] = length.toByte()
+                    System.arraycopy(data,offset,packetData,4,length)
+//                        data.copyOfRange(offset, offset + length )
                     val packet = DatagramPacket(
                         packetData,
-                        length,
+                        length + 4,
                         InetAddress.getByName(device.deviceIpAddress.value),
                         port
                     )

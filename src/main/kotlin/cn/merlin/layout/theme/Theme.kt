@@ -9,8 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
-import cn.merlin.utils.Settings
-import cn.merlin.utils.followSystemTheme
+import cn.merlin.utils.changeTheme
 
 
 const val TWEEN_DURATION = 500
@@ -83,12 +82,14 @@ private val DarkColors = darkColorScheme(
 fun MainTheme(
     content: @Composable ()->Unit
 ){
+    val useDarkTheme = mutableStateOf(false)
+    useDarkTheme.value = when(changeTheme.value){
+        0 -> isSystemInDarkTheme()
+        1 -> false
+        2 -> true
+        else -> isSystemInDarkTheme()
+    }
 
-    val useDarkTheme = mutableStateOf(when{
-        followSystemTheme.value -> isSystemInDarkTheme()
-        Settings["userTheme"]?.value == 1 -> true
-        else -> false
-    })
     val targetColors = if(useDarkTheme.value) DarkColors else LightColors
 
     val primary = animateColorAsState(targetColors.primary,TweenSpec(TWEEN_DURATION))

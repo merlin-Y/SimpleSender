@@ -11,26 +11,30 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
+import cn.merlin.bean.Device
 import cn.merlin.database.SenderDB
 import cn.merlin.layout.leftMenu.leftMenuBar
 import cn.merlin.layout.topbar.TittleBar
 import cn.merlin.layout.theme.MainTheme
 import cn.merlin.layout.topbar.isMenuBarPickUp
-import cn.merlin.network.SenderServer
+import cn.merlin.network.Server
 import cn.merlin.utils.getAllSettings
 import cn.merlin.utils.getUserProfile
 import moe.tlaster.precompose.PreComposeWindow
 
 fun main() = application {
-    getUserProfile()
     val windowState = rememberWindowState(size = DpSize(height = 700.dp, width = 900.dp))
     val offsetX = mutableStateOf(0f)
     val offsetY = mutableStateOf(0f)
     val senderDB = SenderDB()
     senderDB.createTables()
-    val senderServer = SenderServer()
+    val server = Server()
     val menuBarWidth = animateDpAsState(if (isMenuBarPickUp.value) 60.dp else 180.dp, TweenSpec(400))
+    val localDevices: MutableList<Device> = mutableStateListOf()
     getAllSettings()
+    getUserProfile()
+
+    val devices = senderDB.selectAllDevice()
 
     MainTheme() {
         PreComposeWindow(
@@ -41,7 +45,7 @@ fun main() = application {
             undecorated = true,
             resizable = false
         ) {
-            senderServer.startServer()
+            server.startServer()
             App(menuBarWidth.value, offsetX, offsetY, windowState)
         }
     }
@@ -57,8 +61,8 @@ fun App(menuBarWidth: Dp, offsetX: MutableState<Float>, offsetY: MutableState<Fl
             Row {
                 leftMenuBar(menuBarWidth)/*  MenuBarWidth */
                 Surface {
-                    setting(900.dp - menuBarWidth)
-//                    DetectDevice(900.dp - menuBarWidth)/* 900.dp - MenuBarWidth */
+//                    mainWindow(900.dp - menuBarWidth)
+                    setting(900.dp - menuBarWidth,700.dp)
                 }
             }
         }

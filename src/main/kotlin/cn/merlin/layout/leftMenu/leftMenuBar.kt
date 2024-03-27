@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
@@ -22,9 +23,15 @@ import cn.merlin.bean.model.DeviceModel
 import cn.merlin.layout.theme.TWEEN_DURATION
 import cn.merlin.layout.topbar.isMenuBarPickUp
 import cn.merlin.network.Sender
+import cn.merlin.test.SenderTest
 import java.io.File
 
 val sender = Sender()
+
+val selectDevice = mutableStateOf(false)
+val selectSettings = mutableStateOf(false)
+val selectDetect = mutableStateOf(false)
+val selectHistory = mutableStateOf(false)
 
 @Composable
 fun leftMenuBar(
@@ -88,25 +95,13 @@ fun leftMenuBar(
                 item{
                     ListItem("Icons/computer.png","我的电脑",width)
                 }
-                item{
-                    ListItem("Icons/computer.png","我的电脑",width)
-                }
-                item{
-                    ListItem("Icons/computer.png","我的电脑",width)
-                }
-                item{
-                    ListItem("Icons/computer.png","我的电脑",width)
-                }
-                item{
-                    ListItem("Icons/computer.png","我的电脑",width)
-                }
             }
             Spacer(modifier = Modifier.background(MaterialTheme.colorScheme.tertiary).height(2.dp).width(width))
             Column(
                 modifier = Modifier.size(width = width, height = 700.dp - leftButtomMenuHeight.value),
                 horizontalAlignment = Alignment.CenterHorizontally){
-                MenuItem("Icons/history.webp","发送历史",width)
                 MenuItem("Icons/search.webp","搜索设备",width)
+                MenuItem("Icons/history.webp","发送历史",width)
                 MenuItem("Icons/settings.webp","系统设置",width)
             }
 
@@ -158,7 +153,8 @@ fun ListItem(
         modifier = Modifier.padding(0.dp).fillMaxWidth().height(52.dp),
         shape = MaterialTheme.shapes.extraSmall,
         onClick = {
-
+            val sender = Sender()
+            sender.sendFileToSelectedDevice(DeviceModel(Device(deviceIpAddress = "127.0.0.1")),File("C:\\Users\\merlin\\Documents\\SimpleSender\\src\\main\\resources\\files\\file.zip"))
         }
     ){
         Row {
