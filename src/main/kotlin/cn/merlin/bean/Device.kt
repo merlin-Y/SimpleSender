@@ -6,5 +6,6 @@ data class Device(
     var deviceName: String = "",
     var deviceIpAddress: String = "",
     var deviceMacAddress: String = "",
-    var deviceNickName: String = ""
+    var deviceNickName: String = "",
+    var deviceType: String = ""
 ): Serializable

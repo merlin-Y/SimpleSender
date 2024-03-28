@@ -8,6 +8,7 @@ object DeviceModel : Table() {
     val deviceIpAddress = varchar("deviceIpAddress",50)
     val deviceMacAddress = varchar("deviceMacAddress",50)
     val deviceNickName = varchar("deviceNickName",50)
+    val deviceType = varchar("deviceType",50)
 
     override val primaryKey = PrimaryKey(deviceId,name = "deviceId")
 }

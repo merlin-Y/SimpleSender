@@ -1,3 +1,5 @@
+package cn.merlin.layout.mainWindow
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.MaterialTheme
@@ -28,6 +30,9 @@ fun history(
                 lineHeight = 32.sp
             )
             Spacer(modifier = Modifier.background(MaterialTheme.colorScheme.tertiary).height(2.dp).width(width))
+            Surface {
+
+            }
         }
     }
 }

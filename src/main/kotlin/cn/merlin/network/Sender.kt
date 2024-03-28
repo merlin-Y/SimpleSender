@@ -52,7 +52,7 @@ class Sender {
             val packetSize = 10240
             try {
                 val socket = Socket()
-                socket.connect(InetSocketAddress(device.deviceIpAddress.value, 19999), 100)
+                socket.connect(InetSocketAddress(device.deviceIpAddress.value, 19999), 2000)
                 val datagramSocket = DatagramSocket()
                 val data = file.readBytes()
                 val totalPackets = ceil(data.size.toDouble() / packetSize).toInt()

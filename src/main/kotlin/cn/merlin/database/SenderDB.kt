@@ -7,6 +7,7 @@ import cn.merlin.database.model.DeviceModel.deviceIpAddress
 import cn.merlin.database.model.DeviceModel.deviceMacAddress
 import cn.merlin.database.model.DeviceModel.deviceName
 import cn.merlin.database.model.DeviceModel.deviceNickName
+import cn.merlin.database.model.DeviceModel.deviceType
 import cn.merlin.database.model.MessageModel
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -32,6 +33,7 @@ class SenderDB {
                 it[deviceIpAddress] = device.deviceIpAddress
                 it[deviceMacAddress] = device.deviceMacAddress
                 it[deviceNickName] = device.deviceName
+                it[deviceType] = device.deviceType
             } get DeviceModel.deviceId
         }
         return deviceId
@@ -41,12 +43,13 @@ class SenderDB {
         val devices: MutableList<Device> = mutableListOf()
         transaction {
             val query = DeviceModel.selectAll()
-            query?.forEach {
+            query.forEach {
                 val device = Device()
                 device.deviceIpAddress = it[deviceIpAddress]
                 device.deviceName = it[deviceName]
                 device.deviceMacAddress = it[deviceMacAddress]
                 device.deviceNickName = it[deviceNickName]
+                device.deviceType = it[deviceType]
                 devices.add(device)
             }
         }
@@ -62,6 +65,7 @@ class SenderDB {
                 device.deviceName = it[deviceName]
                 device.deviceMacAddress = it[deviceMacAddress]
                 device.deviceNickName = it[deviceNickName]
+                device.deviceType = it[deviceType]
             }
         }
         return device

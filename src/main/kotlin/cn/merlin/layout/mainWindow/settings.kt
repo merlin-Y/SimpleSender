@@ -1,3 +1,5 @@
+package cn.merlin.layout.mainWindow
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -7,17 +9,18 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cn.merlin.utils.changeTheme
 import cn.merlin.utils.updateSettings
+import moe.tlaster.precompose.navigation.Navigator
 
 @Composable
-fun setting(
+fun settings(
     width: Dp,
-    height: Dp
+    height: Dp,
+    navigator: Navigator
 ) {
     val expend = mutableStateOf(false)
     Surface(

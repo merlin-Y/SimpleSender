@@ -2,7 +2,6 @@ package cn.merlin.layout.theme
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.TweenSpec
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
@@ -10,7 +9,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import cn.merlin.utils.changeTheme
-
+import com.github.tkuenneth.nativeparameterstoreaccess.Dconf
+import com.github.tkuenneth.nativeparameterstoreaccess.Dconf.HAS_DCONF
+import com.github.tkuenneth.nativeparameterstoreaccess.MacOSDefaults
+import com.github.tkuenneth.nativeparameterstoreaccess.NativeParameterStoreAccess.IS_MACOS
+import com.github.tkuenneth.nativeparameterstoreaccess.NativeParameterStoreAccess.IS_WINDOWS
+import com.github.tkuenneth.nativeparameterstoreaccess.WindowsRegistry
 
 const val TWEEN_DURATION = 500
 
@@ -78,16 +82,18 @@ private val DarkColors = darkColorScheme(
     scrim = md_theme_dark_scrim,
 )
 
+
 @Composable
 fun MainTheme(
+    isInDarkMode: MutableState<Boolean>,
     content: @Composable ()->Unit
 ){
     val useDarkTheme = mutableStateOf(false)
     useDarkTheme.value = when(changeTheme.value){
-        0 -> isSystemInDarkTheme()
+        0 -> isInDarkMode.value
         1 -> false
         2 -> true
-        else -> isSystemInDarkTheme()
+        else -> isInDarkMode.value
     }
 
     val targetColors = if(useDarkTheme.value) DarkColors else LightColors
@@ -142,3 +148,21 @@ fun MainTheme(
             shapes = Shapes
         )
     }
+
+fun isSystemInDarkTheme(): Boolean = when {
+    IS_WINDOWS -> {
+        val result = WindowsRegistry.getWindowsRegistryEntry(
+            "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
+            "AppsUseLightTheme")
+        result == 0x0
+    }
+    IS_MACOS -> {
+        val result = MacOSDefaults.getDefaultsEntry("AppleInterfaceStyle")
+        result == "Dark"
+    }
+    HAS_DCONF -> {
+        val result = Dconf.getDconfEntry("/org/gnome/desktop/interface/gtk-theme")
+        result.lowercase().contains("dark")
+    }
+    else -> false
+}

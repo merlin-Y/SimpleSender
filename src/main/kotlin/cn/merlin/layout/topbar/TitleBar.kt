@@ -28,11 +28,11 @@ val isMenuBarPickUp = mutableStateOf(false)
 fun TittleBar(
     icon: String,
     title: String,
-    offsetX: MutableState<Float>,
-    offsetY: MutableState<Float>,
     windowState: WindowState
 ) {
     val appIconStartDp = animateDpAsState(if (isMenuBarPickUp.value) 20.dp else 0.dp)
+    val offsetX = mutableStateOf(0f)
+    val offsetY = mutableStateOf(0f)
 
     Surface(
         color = MaterialTheme.colorScheme.primary,
