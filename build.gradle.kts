@@ -1,5 +1,7 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
+val exposedVersion = "0.48.0"
+
 plugins {
     kotlin("jvm")
     id("org.jetbrains.compose")
@@ -25,12 +27,14 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.8.0-RC2")  //协程
     implementation("io.github.succlz123:compose-imageloader-desktop:0.0.2") //imageLoader
     implementation("moe.tlaster:precompose:1.5.11") //PreCompose导航栏
-    implementation("org.jetbrains.exposed:exposed-core:0.45.0") //exposed数据库
-    implementation("org.jetbrains.exposed:exposed-dao:0.45.0")
-    implementation("org.jetbrains.exposed:exposed-crypt:0.45.0")
-    implementation("org.jetbrains.exposed:exposed-jdbc:0.45.0")
-    implementation("org.jetbrains.exposed:exposed-kotlin-datetime:0.45.0")
-    implementation("org.jetbrains.exposed:exposed-json:0.45.0")
+    implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-crypt:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-kotlin-datetime:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-json:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-money:$exposedVersion")
+//    implementation("org.jetbrains.exposed:exposed-spring-boot-starter:$exposedVersion")
     implementation("org.xerial:sqlite-jdbc:3.41.2.2")   //sqlite数据库
     implementation("org.slf4j:slf4j-api:1.7.32")
     implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.14.1")
@@ -43,9 +47,23 @@ compose.desktop {
         mainClass = "MainKt"
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb,TargetFormat.Exe)
             packageName = "SimpleSender"
             packageVersion = "1.0.0"
+            modules("java.compiler", "java.instrument" , "java.sql", "jdk.unsupported", "java.naming")
+            appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
+//            macOS {
+//                iconFile.set(project.file("src\\main\\resources\\Icons\\PaperPlane.png"))
+//            }
+//            windows {
+//                iconFile.set(project.file("C:\\Users\\merlin\\Documents\\SimpleSender\\src\\main\\resources\\Icons\\SimpleSender.ico"))
+//            }
+//            linux {
+//                iconFile.set(project.file("src\\main\\resources\\Icons\\PaperPlane.png"))
+//            }
+//            buildTypes.release.proguard {
+//                isEnabled.set(false)
+//            }
         }
     }
 }

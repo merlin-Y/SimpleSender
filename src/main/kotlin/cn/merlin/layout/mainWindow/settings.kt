@@ -19,8 +19,7 @@ import moe.tlaster.precompose.navigation.Navigator
 @Composable
 fun settings(
     width: Dp,
-    height: Dp,
-    navigator: Navigator
+    height: Dp
 ) {
     val expend = mutableStateOf(false)
     Surface(

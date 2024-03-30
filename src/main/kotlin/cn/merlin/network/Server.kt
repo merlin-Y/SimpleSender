@@ -1,6 +1,5 @@
 package cn.merlin.network
 
-import androidx.compose.runtime.mutableStateOf
 import cn.merlin.utils.getUserProfile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -12,11 +11,9 @@ import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.ServerSocket
 
-val GetRequests = mutableStateOf(false)
-
 class Server {
     private val receiveRequestPort = 19999
-    private val receivedPort = mutableSetOf<Int>(19999)
+    private val receivedPort = mutableSetOf(19999)
 
     fun startServer() {
         CoroutineScope(Dispatchers.IO).launch {

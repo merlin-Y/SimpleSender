@@ -17,6 +17,7 @@ import com.github.tkuenneth.nativeparameterstoreaccess.NativeParameterStoreAcces
 import com.github.tkuenneth.nativeparameterstoreaccess.WindowsRegistry
 
 const val TWEEN_DURATION = 500
+val isInDarkMode = mutableStateOf(true)
 
 private val LightColors = lightColorScheme(
     primary = md_theme_light_primary,
@@ -85,7 +86,6 @@ private val DarkColors = darkColorScheme(
 
 @Composable
 fun MainTheme(
-    isInDarkMode: MutableState<Boolean>,
     content: @Composable ()->Unit
 ){
     val useDarkTheme = mutableStateOf(false)

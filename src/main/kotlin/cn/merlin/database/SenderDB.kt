@@ -9,14 +9,15 @@ import cn.merlin.database.model.DeviceModel.deviceName
 import cn.merlin.database.model.DeviceModel.deviceNickName
 import cn.merlin.database.model.DeviceModel.deviceType
 import cn.merlin.database.model.MessageModel
+import cn.merlin.utils.databasePath
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.io.File
+import java.nio.file.Paths
 
 class SenderDB {
-    val url = "src/main/resources/database/sender.db"
-    val database = Database.connect("jdbc:sqlite:${url}", driver = "org.sqlite.JDBC")
-
+    val database = Database.connect("jdbc:sqlite:${databasePath.value}", driver = "org.sqlite.JDBC")
     fun createTables() {
         transaction {
             addLogger(StdOutSqlLogger)
@@ -59,7 +60,7 @@ class SenderDB {
     fun selectDeviceById(deviceId: Int): Device {
         val device = Device()
         transaction {
-            val query = DeviceModel.select { DeviceModel.deviceId eq deviceId }
+            val query = DeviceModel.select(DeviceModel.deviceId).where { DeviceModel.deviceId eq deviceId }
             query.forEach {
                 device.deviceIpAddress = it[deviceIpAddress]
                 device.deviceName = it[deviceName]
@@ -92,7 +93,7 @@ class SenderDB {
         return messageId
     }
 
-    fun selectAllMessage(): MutableList<Message>{
+    fun selectAllMessage(): MutableList<Message> {
         val messages: MutableList<Message> = mutableListOf()
         transaction {
             val query = MessageModel.selectAll()
@@ -112,7 +113,7 @@ class SenderDB {
     fun selectMessageById(messageId: Int): Query? {
         var query: Query? = null
         transaction {
-            query = MessageModel.select { MessageModel.messageId eq messageId }
+            query = MessageModel.select(MessageModel.messageId).where { MessageModel.messageId eq messageId }
         }
         return query
     }

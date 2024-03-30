@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -27,31 +28,29 @@ import cn.merlin.layout.theme.TWEEN_DURATION
 import cn.merlin.layout.topbar.isMenuBarPickUp
 import cn.merlin.network.Sender
 import kotlinx.coroutines.*
-import moe.tlaster.precompose.navigation.NavHost
 import moe.tlaster.precompose.navigation.Navigator
-import moe.tlaster.precompose.navigation.rememberNavigator
-import moe.tlaster.precompose.navigation.transition.NavTransition
 import java.io.File
 
 val sender = Sender()
 
+
 @Composable
 fun leftMenuBar(
+    localDeviceList: SnapshotStateList<DeviceModel>,
     width: Dp,
     navigator: Navigator
 ) {
-
-    val leftButtomMenuHeight = animateDpAsState(if (!isMenuBarPickUp.value) 455.dp else 500.dp, TweenSpec(300))
+    val leftButtonMenuHeight = animateDpAsState(if (!isMenuBarPickUp.value) 455.dp else 500.dp, TweenSpec(300))
 
     Surface(
         modifier = Modifier.size(width, 700.dp),
         color = MaterialTheme.colorScheme.primary
     ) {
-        Column() {
+        Column{
             val density = LocalDensity.current
             AnimatedVisibility(
                 visible = !isMenuBarPickUp.value,
-                enter = slideInVertically() {
+                enter = slideInVertically{
                     with(density) { -40.dp.roundToPx() }
                 } + expandVertically(
                     expandFrom = Alignment.Top
@@ -74,40 +73,24 @@ fun leftMenuBar(
             }
             LazyColumn(
                 modifier = Modifier
-                    .size(width, leftButtomMenuHeight.value)
+                    .size(width, leftButtonMenuHeight.value)
                     .padding(bottom = 20.dp),
                 horizontalAlignment = Alignment.Start
             ) {
-                item {
-                    ListItem("Icons/computer.png", "我的MERLIN_DESKTOP", width,navigator)
-                }
-                item {
-                    ListItem("Icons/phone.png", "merlin-JinYi的K50", width,navigator)
-                }
-                item {
-                    ListItem("Icons/laptop.png", "merlin-JinYi的Xiaomi Pad 5 Pro 12.4", width,navigator)
-                }
-                item {
-                    ListItem("Icons/computer.png", "我的电脑", width,navigator)
-                }
-                item {
-                    ListItem("Icons/computer.png", "我的电脑", width,navigator)
-                }
-                item {
-                    ListItem("Icons/computer.png", "我的电脑", width,navigator)
-                }
-                item {
-                    ListItem("Icons/computer.png", "我的电脑", width,navigator)
+                localDeviceList.forEach{
+                    item {
+                        ListItem(it,navigator)
+                    }
                 }
             }
             Spacer(modifier = Modifier.background(MaterialTheme.colorScheme.tertiary).height(2.dp).width(width))
             Column(
-                modifier = Modifier.size(width = width, height = 700.dp - leftButtomMenuHeight.value),
+                modifier = Modifier.size(width = width, height = 700.dp - leftButtonMenuHeight.value),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                MenuItem("Icons/search.webp", "搜索设备", width,navigator)
-                MenuItem("Icons/history.webp", "发送历史", width,navigator)
-                MenuItem("Icons/settings.webp", "系统设置", width,navigator)
+                MenuItem("Icons/search.webp", "搜索设备",navigator)
+                MenuItem("Icons/history.webp", "发送历史",navigator)
+                MenuItem("Icons/settings.webp", "系统设置",navigator)
             }
 
         }
@@ -116,9 +99,8 @@ fun leftMenuBar(
 
 @Composable
 fun MenuItem(
-    Icon: String,
+    icon: String,
     text: String,
-    width: Dp,
     navigator: Navigator
 ) {
     val imageWidth = animateDpAsState(if (isMenuBarPickUp.value) 20.dp else 30.dp, TweenSpec(TWEEN_DURATION))
@@ -129,21 +111,23 @@ fun MenuItem(
         modifier = Modifier.padding(0.dp).fillMaxWidth().height(52.dp),
         shape = MaterialTheme.shapes.extraSmall,
         onClick = {
-            if (text == "搜索设备") {
-                navigator.navigate("/detect")
-                sender.detectDevices()
-            }
-            else if(text == "系统设置"){
-                navigator.navigate("/settings")
-            }
-            else{
-                navigator.navigate("/history")
+            when (text) {
+                "搜索设备" -> {
+                    navigator.navigate("/detect")
+                    sender.detectDevices()
+                }
+                "系统设置" -> {
+                    navigator.navigate("/settings")
+                }
+                else -> {
+                    navigator.navigate("/history")
+                }
             }
         }
     ) {
         Row {
             Image(
-                painter = painterResource(Icon),
+                painter = painterResource(icon),
                 contentDescription = text,
                 modifier = Modifier.size(imageWidth.value)
             )
@@ -166,11 +150,10 @@ fun MenuItem(
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ListItem(
-    Icon: String,
-    text: String,
-    width: Dp,
-    navigator: Navigator
+    deviceModel: DeviceModel,
+    navigator: Navigator,
 ) {
+    val text = if(deviceModel.deviceNickName.value != "") deviceModel.deviceNickName.value else deviceModel.deviceName.value
     val scrollState = rememberScrollState(0)
     val scrollStateCoroutine = rememberCoroutineScope()
     val imageWidth = animateDpAsState(if (isMenuBarPickUp.value) 20.dp else 30.dp, TweenSpec(TWEEN_DURATION))
@@ -196,20 +179,23 @@ fun ListItem(
                     }
                 }
             },
+        colors = IconButtonDefaults.iconButtonColors(containerColor = if(deviceModel.inListType.value == 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary),
         shape = MaterialTheme.shapes.extraSmall,
         onClick = {
             navigator.navigate("/message")
             currentDevice.value = text
-            val sender = Sender()
-            sender.sendFileToSelectedDevice(
-                DeviceModel(Device(deviceIpAddress = "192.168.31.32")),
-                File("C:\\Users\\merlin\\Documents\\SimpleSender\\src\\main\\resources\\files\\file.zip")
-            )
         }
     ) {
         Row {
             Image(
-                painter = painterResource(Icon),
+                painter = painterResource(
+                    when (deviceModel.deviceType.value) {
+                        "computer" -> "Icons/computer.png"
+                        "phone" -> "Icons/phone.png"
+                        "laptop" -> "Icons/laptop.png"
+                        else -> "Icons/phone.png"
+                    }
+                ),
                 contentDescription = text,
                 modifier = Modifier.size(imageWidth.value)
             )

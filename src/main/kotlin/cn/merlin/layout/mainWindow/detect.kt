@@ -16,6 +16,7 @@ import cn.merlin.bean.model.DeviceModel
 
 @Composable
 fun detect(
+    localDeviceList: SnapshotStateList<DeviceModel>,
     width: Dp,
     height: Dp
 ) {
@@ -46,7 +47,7 @@ fun detect(
             ) {
                 for (device in deviceList) {
                     item {
-                        DeviceCard(device)
+                        DeviceCard(localDeviceList,device)
                     }
                 }
             }
@@ -56,12 +57,15 @@ fun detect(
 }
 
 @Composable
-fun DeviceCard(device: DeviceModel) {
-    Surface(
+fun DeviceCard(localDeviceList: MutableList<DeviceModel>, device: DeviceModel) {
+    Button(
         shape = MaterialTheme.shapes.extraLarge,
         modifier = Modifier.size(if (device.deviceIpAddress.value == "192.168.31.216") 180.dp else if (device.deviceIpAddress.value == "192.168.31.10") 160.dp else 120.dp)
             .padding(top = 20.dp, start = 20.dp),
-        color = MaterialTheme.colorScheme.onSecondary
+        onClick = {
+            device.inListType.value = 1
+            localDeviceList.add(device)
+        }
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
