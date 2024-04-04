@@ -22,9 +22,9 @@ dependencies {
     // (in a separate module for demo project and in testMain).
     // With compose.desktop.common you will also lose @Preview functionality
     implementation(compose.desktop.currentOs)
-    implementation("org.jetbrains.compose.material3:material3-desktop:1.5.11")  //material3
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0-RC2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.8.0-RC2")  //协程
+    implementation("org.jetbrains.compose.material3:material3-desktop:1.6.1")  //material3
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.8.0")  //协程
     implementation("io.github.succlz123:compose-imageloader-desktop:0.0.2") //imageLoader
     implementation("moe.tlaster:precompose:1.5.11") //PreCompose导航栏
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
@@ -36,9 +36,9 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-money:$exposedVersion")
 //    implementation("org.jetbrains.exposed:exposed-spring-boot-starter:$exposedVersion")
     implementation("org.xerial:sqlite-jdbc:3.41.2.2")   //sqlite数据库
-    implementation("org.slf4j:slf4j-api:1.7.32")
-    implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.14.1")
-    implementation("org.apache.logging.log4j:log4j-core:2.17.1")
+    implementation("org.slf4j:slf4j-api:2.0.12")
+//    implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.23.1")
+    implementation("org.apache.logging.log4j:log4j-core:2.23.1")
     implementation("com.github.tkuenneth:nativeparameterstoreaccess:0.1.2") //读取系统设置，动态响应颜色变化。
 }
 
@@ -52,18 +52,6 @@ compose.desktop {
             packageVersion = "1.0.0"
             modules("java.compiler", "java.instrument" , "java.sql", "jdk.unsupported", "java.naming")
             appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
-//            macOS {
-//                iconFile.set(project.file("src\\main\\resources\\Icons\\PaperPlane.png"))
-//            }
-//            windows {
-//                iconFile.set(project.file("C:\\Users\\merlin\\Documents\\SimpleSender\\src\\main\\resources\\Icons\\SimpleSender.ico"))
-//            }
-//            linux {
-//                iconFile.set(project.file("src\\main\\resources\\Icons\\PaperPlane.png"))
-//            }
-//            buildTypes.release.proguard {
-//                isEnabled.set(false)
-//            }
         }
     }
 }

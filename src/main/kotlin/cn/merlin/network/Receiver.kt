@@ -11,7 +11,7 @@ import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.ServerSocket
 
-class Server {
+class Receiver {
     private val receiveRequestPort = 19999
     private val receivedPort = mutableSetOf(19999)
 
@@ -32,7 +32,7 @@ class Server {
                     } else if (request == 2) {
                         objectOutputStream.writeInt(1)
                         objectOutputStream.flush()
-                        val receiveFile = objectInputStream.readObject() as cn.merlin.bean.File
+                        val receiveFile = objectInputStream.readObject() as cn.merlin.database.model.FileModel
                         val port = getFreePort()
                         objectOutputStream.writeInt(port)
                         objectOutputStream.flush()
@@ -46,7 +46,7 @@ class Server {
         }
     }
 
-    private fun receiveFile(receivedFile: cn.merlin.bean.File, port: Int) {
+    private fun receiveFile(receivedFile: cn.merlin.database.model.FileModel, port: Int) {
         val packetSize = 10240
         var packetNumber = 0
         try {

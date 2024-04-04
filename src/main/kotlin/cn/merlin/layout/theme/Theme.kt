@@ -88,7 +88,8 @@ private val DarkColors = darkColorScheme(
 fun MainTheme(
     content: @Composable ()->Unit
 ){
-    val useDarkTheme = mutableStateOf(false)
+    val useDarkTheme = remember{ mutableStateOf(isSystemInDarkTheme())}
+
     useDarkTheme.value = when(changeTheme.value){
         0 -> isInDarkMode.value
         1 -> false
@@ -107,6 +108,7 @@ fun MainTheme(
     val secondaryContainer = animateColorAsState(targetColors.secondaryContainer,TweenSpec(TWEEN_DURATION))
     val onSecondaryContainer = animateColorAsState(targetColors.onSecondaryContainer,TweenSpec(TWEEN_DURATION))
     val tertiary = animateColorAsState(targetColors.tertiary,TweenSpec(TWEEN_DURATION))
+    val onTertiary = animateColorAsState(targetColors.onTertiary,TweenSpec(TWEEN_DURATION))
 
     val appColor by mutableStateOf(
         ColorScheme(
@@ -119,7 +121,7 @@ fun MainTheme(
             secondaryContainer = secondaryContainer.value,
             onSecondaryContainer = onSecondaryContainer.value,
             tertiary = tertiary.value,
-            onTertiary = Color(0xffffff),
+            onTertiary = onTertiary.value,
             tertiaryContainer = Color(0xffffff),
             onTertiaryContainer = Color(0xffffff),
             background = Color(0xffffff),

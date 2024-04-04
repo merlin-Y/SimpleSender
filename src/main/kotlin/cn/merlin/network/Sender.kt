@@ -42,7 +42,6 @@ class Sender {
                     }
                 }
             }
-            println("${currentDevice.deviceName} ${currentDevice.deviceIpAddress} ${currentDevice.deviceMacAddress}")
             println("Scanning accomplished")
         }
     }
@@ -62,7 +61,7 @@ class Sender {
                 objectOutputStream.flush()
                 val requestCode = objectInputStream.readInt()
                 if (requestCode == 1) {
-                    objectOutputStream.writeObject(cn.merlin.bean.File(file.name, data.size,totalPackets))
+                    objectOutputStream.writeObject(cn.merlin.database.model.FileModel(file.name, data.size, totalPackets))
                     objectOutputStream.flush()
                 } else this.cancel()
                 val port = objectInputStream.readInt()

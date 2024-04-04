@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -21,7 +22,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cn.merlin.bean.Device
 import cn.merlin.bean.model.DeviceModel
 import cn.merlin.layout.mainWindow.*
 import cn.merlin.layout.theme.TWEEN_DURATION
@@ -32,7 +32,6 @@ import moe.tlaster.precompose.navigation.Navigator
 import java.io.File
 
 val sender = Sender()
-
 
 @Composable
 fun leftMenuBar(
@@ -85,7 +84,7 @@ fun leftMenuBar(
             }
             Spacer(modifier = Modifier.background(MaterialTheme.colorScheme.tertiary).height(2.dp).width(width))
             Column(
-                modifier = Modifier.size(width = width, height = 700.dp - leftButtonMenuHeight.value),
+                modifier = Modifier.size(width = width, height = 245.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 MenuItem("Icons/search.webp", "搜索设备",navigator)
@@ -103,7 +102,7 @@ fun MenuItem(
     text: String,
     navigator: Navigator
 ) {
-    val imageWidth = animateDpAsState(if (isMenuBarPickUp.value) 20.dp else 30.dp, TweenSpec(TWEEN_DURATION))
+    val imageWidth = animateDpAsState(if (isMenuBarPickUp.value) 20.dp else 30.dp, TweenSpec(200))
     val textWidth =
         animateDpAsState(if (isMenuBarPickUp.value) 0.dp else 60.dp, TweenSpec(durationMillis = 200, delay = 200))
 
@@ -159,6 +158,7 @@ fun ListItem(
     val imageWidth = animateDpAsState(if (isMenuBarPickUp.value) 20.dp else 30.dp, TweenSpec(TWEEN_DURATION))
     val textWidth =
         animateDpAsState(if (isMenuBarPickUp.value) 0.dp else 80.dp, TweenSpec(durationMillis = 200, delay = 200))
+    val buttonColor = if(deviceModel.inListType.value) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
 
     FilledIconButton(
         modifier = Modifier
@@ -179,11 +179,12 @@ fun ListItem(
                     }
                 }
             },
-        colors = IconButtonDefaults.iconButtonColors(containerColor = if(deviceModel.inListType.value == 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary),
+        colors = IconButtonDefaults.iconButtonColors(containerColor = animateColorAsState(buttonColor, TweenSpec(TWEEN_DURATION)).value),
         shape = MaterialTheme.shapes.extraSmall,
         onClick = {
+
             navigator.navigate("/message")
-            currentDevice.value = text
+            currentDevice.value = deviceModel
         }
     ) {
         Row {

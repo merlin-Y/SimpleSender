@@ -22,13 +22,12 @@ import cn.merlin.layout.mainWindow.settings
 import cn.merlin.layout.topbar.TittleBar
 import cn.merlin.layout.theme.MainTheme
 import cn.merlin.layout.topbar.isMenuBarPickUp
-import cn.merlin.network.Server
+import cn.merlin.network.Receiver
 import cn.merlin.utils.*
 import moe.tlaster.precompose.PreComposeApp
 import moe.tlaster.precompose.navigation.NavHost
 import moe.tlaster.precompose.navigation.rememberNavigator
 import moe.tlaster.precompose.navigation.transition.NavTransition
-import java.io.File
 
 fun main() = application {
 
@@ -36,7 +35,7 @@ fun main() = application {
     val menuBarWidth = animateDpAsState(if (isMenuBarPickUp.value) 60.dp else 180.dp, TweenSpec(400))
     val localDeviceList = remember { mutableStateListOf<DeviceModel>() }
     @Composable
-    fun App(localDeviceList: SnapshotStateList<DeviceModel>, menuBarWidth: Dp, windowState: WindowState) {
+    fun App(localDeviceList: SnapshotStateList<DeviceModel>, menuBarWidth: Dp, windowState: WindowState,senderDB: SenderDB) {
         PreComposeApp {
             val navigator = rememberNavigator()
             Surface(
@@ -47,17 +46,17 @@ fun main() = application {
                     Row {
                         leftMenuBar(localDeviceList, menuBarWidth, navigator)/*  MenuBarWidth */
                         Surface {
-                            message(900.dp - menuBarWidth, 700.dp)
+                            message(900.dp - menuBarWidth, 700.dp,senderDB)
                             NavHost(
                                 navigator = navigator,
-                                initialRoute = "/message",
+                                initialRoute = "/detect",
                                 navTransition = NavTransition()
                             ) {
                                 scene(
                                     route = "/message",
                                     navTransition = NavTransition()
                                 ) {
-                                    message(900.dp - menuBarWidth, 700.dp)
+                                    message(900.dp - menuBarWidth, 700.dp,senderDB)
                                 }
                                 scene(
                                     route = "/detect",
@@ -95,7 +94,7 @@ fun main() = application {
             resizable = false
         ) {
             createAllResourcesFiles()
-            val server = Server()
+            val server = Receiver()
             server.startServer()
             val senderDB = SenderDB()
             senderDB.createTables()
@@ -103,7 +102,8 @@ fun main() = application {
             getUserProfile()
             detectDarkMode()
             getLocalDevice(localDeviceList, senderDB)
-            App(localDeviceList, menuBarWidth.value, windowState)
+
+            App(localDeviceList, menuBarWidth.value, windowState,senderDB)
         }
     }
 }

@@ -3,6 +3,7 @@ package cn.merlin.database
 import cn.merlin.bean.Device
 import cn.merlin.bean.Message
 import cn.merlin.database.model.DeviceModel
+import cn.merlin.database.model.DeviceModel.deviceId
 import cn.merlin.database.model.DeviceModel.deviceIpAddress
 import cn.merlin.database.model.DeviceModel.deviceMacAddress
 import cn.merlin.database.model.DeviceModel.deviceName
@@ -13,8 +14,6 @@ import cn.merlin.utils.databasePath
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.io.File
-import java.nio.file.Paths
 
 class SenderDB {
     val database = Database.connect("jdbc:sqlite:${databasePath.value}", driver = "org.sqlite.JDBC")
@@ -26,15 +25,15 @@ class SenderDB {
         }
     }
 
-    fun insertDevice(device: Device): Int {
+    fun insertDevice(device: cn.merlin.bean.model.DeviceModel): Int {
         var deviceId: Int = -1
         transaction {
             deviceId = DeviceModel.insert {
-                it[deviceName] = device.deviceName
-                it[deviceIpAddress] = device.deviceIpAddress
-                it[deviceMacAddress] = device.deviceMacAddress
-                it[deviceNickName] = device.deviceName
-                it[deviceType] = device.deviceType
+                it[deviceName] = device.deviceName.value
+                it[deviceIpAddress] = device.deviceIpAddress.value
+                it[deviceMacAddress] = device.deviceMacAddress.value
+                it[deviceNickName] = device.deviceName.value
+                it[deviceType] = device.deviceType.value
             } get DeviceModel.deviceId
         }
         return deviceId
@@ -46,6 +45,7 @@ class SenderDB {
             val query = DeviceModel.selectAll()
             query.forEach {
                 val device = Device()
+                device.deviceId = it[deviceId]
                 device.deviceIpAddress = it[deviceIpAddress]
                 device.deviceName = it[deviceName]
                 device.deviceMacAddress = it[deviceMacAddress]
@@ -80,14 +80,16 @@ class SenderDB {
         return result
     }
 
-    fun insertMessage(message: Message): Int {
+    fun insertMessage(message: cn.merlin.bean.model.MessageModel): Int {
         var messageId: Int = -1
         transaction {
             messageId = MessageModel.insert {
-                it[messageSenderId] = message.messageSenderId
-                it[messageReceiverId] = message.messageReceiverId
-                it[messageSenderIpAddress] = message.messageSenderIpAddress
-                it[messageReceiverIpAddress] = message.messageReceiverIpAddress
+                it[messageType] = message.messageType.value
+                it[messageContent] = message.messageContent.value
+                it[messageSenderIpAddress] = message.messageSenderIpAddress.value
+                it[messageReceiverIpAddress] = message.messageReceiverIpAddress.value
+                it[messageSenderMacAddress] = message.messageSenderMacAddress.value
+                it[messageReceiverMacAddress] = message.messageReceiverMacAddress.value
             } get MessageModel.messageId
         }
         return messageId
@@ -99,10 +101,13 @@ class SenderDB {
             val query = MessageModel.selectAll()
             query.forEach {
                 val message = Message(
-                    it[MessageModel.messageSenderId],
-                    it[MessageModel.messageReceiverId],
+                    it[MessageModel.messageId],
+                    it[MessageModel.messageType],
+                    it[MessageModel.messageContent],
                     it[MessageModel.messageSenderIpAddress],
-                    it[MessageModel.messageReceiverIpAddress]
+                    it[MessageModel.messageReceiverIpAddress],
+                    it[MessageModel.messageSenderMacAddress],
+                    it[MessageModel.messageReceiverMacAddress]
                 )
                 messages.add(message)
             }

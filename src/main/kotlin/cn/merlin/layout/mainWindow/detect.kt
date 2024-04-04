@@ -63,8 +63,9 @@ fun DeviceCard(localDeviceList: MutableList<DeviceModel>, device: DeviceModel) {
         modifier = Modifier.size(if (device.deviceIpAddress.value == "192.168.31.216") 180.dp else if (device.deviceIpAddress.value == "192.168.31.10") 160.dp else 120.dp)
             .padding(top = 20.dp, start = 20.dp),
         onClick = {
-            device.inListType.value = 1
+            device.inListType.value = false
             localDeviceList.add(device)
+
         }
     ) {
         Column(
