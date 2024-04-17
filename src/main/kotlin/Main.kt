@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
 import cn.merlin.bean.model.DeviceModel
+import cn.merlin.bean.model.MessageModel
 import cn.merlin.database.SenderDB
 import cn.merlin.layout.leftMenu.leftMenuBar
 import cn.merlin.layout.mainWindow.detect
@@ -23,59 +24,74 @@ import cn.merlin.layout.topbar.TittleBar
 import cn.merlin.layout.theme.MainTheme
 import cn.merlin.layout.topbar.isMenuBarPickUp
 import cn.merlin.network.Receiver
+import cn.merlin.network.Sender
 import cn.merlin.utils.*
 import moe.tlaster.precompose.PreComposeApp
 import moe.tlaster.precompose.navigation.NavHost
 import moe.tlaster.precompose.navigation.rememberNavigator
 import moe.tlaster.precompose.navigation.transition.NavTransition
 
-fun main() = application {
+@Composable
+fun App( menuBarWidth: Dp, windowState: WindowState) {
+    PreComposeApp {
+        val localDeviceList: SnapshotStateList<DeviceModel> = remember{ mutableStateListOf() }
+        val detectedDeviceList: SnapshotStateList<DeviceModel> = remember{ mutableStateListOf() }
+        val navigator = rememberNavigator()
+        val messageList: SnapshotStateList<MessageModel> = mutableStateListOf()
 
-    val windowState = rememberWindowState(size = DpSize(height = 700.dp, width = 900.dp))
-    val menuBarWidth = animateDpAsState(if (isMenuBarPickUp.value) 60.dp else 180.dp, TweenSpec(400))
-    val localDeviceList = remember { mutableStateListOf<DeviceModel>() }
-    @Composable
-    fun App(localDeviceList: SnapshotStateList<DeviceModel>, menuBarWidth: Dp, windowState: WindowState,senderDB: SenderDB) {
-        PreComposeApp {
-            val navigator = rememberNavigator()
-            Surface(
-                modifier = Modifier.background(MaterialTheme.colorScheme.primary)
-            ) {
-                Column {
-                    TittleBar("Icons/PaperPlane.png", "SimpleSender", windowState)
-                    Row {
-                        leftMenuBar(localDeviceList, menuBarWidth, navigator)/*  MenuBarWidth */
-                        Surface {
-                            message(900.dp - menuBarWidth, 700.dp,senderDB)
-                            NavHost(
-                                navigator = navigator,
-                                initialRoute = "/detect",
+        val sender = Sender()
+        val receiver = Receiver()
+
+        createAllResourcesFiles()
+        val senderDB = SenderDB()
+        senderDB.createTables()
+        getAllSettings()
+        getUserProfile()
+        detectDarkMode()
+
+        LaunchedEffect(Unit){
+            getLocalDevice(localDeviceList,senderDB)
+            sender.startScanning()
+            receiver.startServer(detectedDeviceList)
+        }
+
+        Surface(
+            modifier = Modifier.background(MaterialTheme.colorScheme.primary)
+        ) {
+            Column {
+                TittleBar("Icons/PaperPlane.png", "SimpleSender", windowState)
+                Row {
+                    leftMenuBar(menuBarWidth, navigator,localDeviceList)/*  MenuBarWidth */
+                    Surface {
+//                            message(900.dp - menuBarWidth, 700.dp,senderDB,messageList)
+                        NavHost(
+                            navigator = navigator,
+                            initialRoute = "/detect",
+                            navTransition = NavTransition()
+                        ) {
+                            scene(
+                                route = "/message",
                                 navTransition = NavTransition()
                             ) {
-                                scene(
-                                    route = "/message",
-                                    navTransition = NavTransition()
-                                ) {
-                                    message(900.dp - menuBarWidth, 700.dp,senderDB)
-                                }
-                                scene(
-                                    route = "/detect",
-                                    navTransition = NavTransition()
-                                ) {
-                                    detect(localDeviceList, 900.dp - menuBarWidth, 700.dp)
-                                }
-                                scene(
-                                    route = "/settings",
-                                    navTransition = NavTransition()
-                                ) {
-                                    settings(900.dp - menuBarWidth, 700.dp)
-                                }
-                                scene(
-                                    route = "/history",
-                                    navTransition = NavTransition()
-                                ) {
-                                    history(900.dp - menuBarWidth, 700.dp)
-                                }
+                                message(900.dp - menuBarWidth, 700.dp,senderDB,messageList)
+                            }
+                            scene(
+                                route = "/detect",
+                                navTransition = NavTransition()
+                            ) {
+                                detect(900.dp - menuBarWidth, 700.dp,detectedDeviceList,localDeviceList)
+                            }
+                            scene(
+                                route = "/settings",
+                                navTransition = NavTransition()
+                            ) {
+                                settings(900.dp - menuBarWidth, 700.dp)
+                            }
+                            scene(
+                                route = "/history",
+                                navTransition = NavTransition()
+                            ) {
+                                history(900.dp - menuBarWidth, 700.dp)
                             }
                         }
                     }
@@ -83,7 +99,12 @@ fun main() = application {
             }
         }
     }
+}
 
+fun main() = application {
+
+    val windowState = rememberWindowState(size = DpSize(height = 700.dp, width = 900.dp))
+    val menuBarWidth = animateDpAsState(if (isMenuBarPickUp.value) 60.dp else 180.dp, TweenSpec(400))
     MainTheme {
         Window(
             onCloseRequest = ::exitApplication,
@@ -93,17 +114,7 @@ fun main() = application {
             undecorated = true,
             resizable = false
         ) {
-            createAllResourcesFiles()
-            val server = Receiver()
-            server.startServer()
-            val senderDB = SenderDB()
-            senderDB.createTables()
-            getAllSettings()
-            getUserProfile()
-            detectDarkMode()
-            getLocalDevice(localDeviceList, senderDB)
-
-            App(localDeviceList, menuBarWidth.value, windowState,senderDB)
+            App(menuBarWidth.value, windowState)
         }
     }
 }

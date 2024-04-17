@@ -4,24 +4,33 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cn.merlin.layout.dialog.ChangeDeviceNameDialog
+import cn.merlin.network.CurrentDeviceInformation
 import cn.merlin.utils.changeTheme
+import cn.merlin.utils.localDeviceName
 import cn.merlin.utils.updateSettings
-import moe.tlaster.precompose.navigation.Navigator
 
 @Composable
 fun settings(
     width: Dp,
     height: Dp
 ) {
-    val expend = mutableStateOf(false)
+    val expend = remember{ mutableStateOf(false) }
+    val isDialogShow = remember{ mutableStateOf(false) }
+
     Surface(
         modifier = Modifier.size(width, height),
         color = MaterialTheme.colorScheme.secondary
@@ -45,13 +54,13 @@ fun settings(
                     ) {
                         Text(
                             text = "主题",
-                            modifier = Modifier.padding(start = 40.dp).weight(5f)
+                            modifier = Modifier.padding(start = 40.dp).weight(3.7f)
                         )
                         Surface(
                             modifier = Modifier.weight(1f)
                         ) {
                             Button(
-                                modifier = Modifier.width(40.dp),
+//                                modifier = Modifier.width(80.dp),
                                 shape = MaterialTheme.shapes.extraSmall,
                                 onClick = {
                                     expend.value = !expend.value
@@ -67,11 +76,14 @@ fun settings(
                                             else -> "跟随系统"
                                         }
                                     )
-                                    Icon(if(expend.value) Icons.Filled.KeyboardArrowDown else Icons.Filled.KeyboardArrowUp,"")
+                                    Icon(
+                                        if (expend.value) Icons.Filled.KeyboardArrowDown else Icons.Filled.KeyboardArrowUp,
+                                        "",
+                                    )
                                 }
                             }
                             DropdownMenu(
-                                modifier = Modifier.padding(0.dp),
+                                modifier = Modifier.padding(0.dp).background(MaterialTheme.colorScheme.primary),
                                 expanded = expend.value,
                                 onDismissRequest = { expend.value = false }
                             ) {
@@ -83,7 +95,7 @@ fun settings(
                                     colors = MenuDefaults.itemColors(textColor = MaterialTheme.colorScheme.onSecondary),
                                     onClick = {
                                         changeTheme.value = 0
-                                        updateSettings("changeTheme",0)
+                                        updateSettings("changeTheme", "0")
                                     }
                                 )
                                 DropdownMenuItem(
@@ -94,7 +106,7 @@ fun settings(
                                     colors = MenuDefaults.itemColors(textColor = MaterialTheme.colorScheme.onSecondary),
                                     onClick = {
                                         changeTheme.value = 1
-                                        updateSettings("changeTheme",1)
+                                        updateSettings("changeTheme", "1")
                                     }
                                 )
                                 DropdownMenuItem(
@@ -105,14 +117,41 @@ fun settings(
                                     colors = MenuDefaults.itemColors(textColor = MaterialTheme.colorScheme.onSecondary),
                                     onClick = {
                                         changeTheme.value = 2
-                                        updateSettings("changeTheme",2)
+                                        updateSettings("changeTheme", "2")
                                     }
                                 )
                             }
                         }
                     }
                 }
-
+                item {
+                    Row(
+                        modifier = Modifier.padding(end = 60.dp)
+                    ) {
+                        Text(
+                            text = "修改设备名",
+                            modifier = Modifier.padding(start = 40.dp).weight(3.7f)
+                        )
+                        Surface(
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Button(
+                                shape = MaterialTheme.shapes.extraSmall,
+                                onClick = {
+                                    isDialogShow.value = true
+                                }
+                            ){
+                                Text(
+                                    if(localDeviceName.value == "-1") CurrentDeviceInformation.getInformation().deviceName else localDeviceName.value,
+                                    color = MaterialTheme.colorScheme.onSecondary,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+                        }
+                    }
+                    if(isDialogShow.value)  ChangeDeviceNameDialog(isDialogShow)
+                }
             }
         }
     }

@@ -7,8 +7,8 @@ class DeviceModel(device: Device) {
     var deviceId = mutableStateOf(device.deviceId)
     var deviceName = mutableStateOf(device.deviceName)
     var deviceIpAddress = mutableStateOf(device.deviceIpAddress)
-    var deviceMacAddress = mutableStateOf(device.deviceMacAddress)
     var deviceNickName = mutableStateOf(device.deviceNickName)
+    var deviceIdentifier = mutableStateOf(device.deviceIdentifier)
     var deviceType = mutableStateOf(device.deviceType)
     var inListType = mutableStateOf(true)
 }

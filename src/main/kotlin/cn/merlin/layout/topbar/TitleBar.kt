@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
@@ -28,8 +29,8 @@ fun TittleBar(
     windowState: WindowState
 ) {
     val appIconStartDp = animateDpAsState(if (isMenuBarPickUp.value) 20.dp else 0.dp)
-    val offsetX = mutableStateOf(0f)
-    val offsetY = mutableStateOf(0f)
+    val offsetX = remember{ mutableStateOf(0f) }
+    val offsetY = remember{ mutableStateOf(0f) }
 
     Surface(
         color = MaterialTheme.colorScheme.primary,

@@ -4,8 +4,8 @@ import cn.merlin.bean.Device
 import cn.merlin.bean.Message
 import cn.merlin.database.model.DeviceModel
 import cn.merlin.database.model.DeviceModel.deviceId
+import cn.merlin.database.model.DeviceModel.deviceIdentifier
 import cn.merlin.database.model.DeviceModel.deviceIpAddress
-import cn.merlin.database.model.DeviceModel.deviceMacAddress
 import cn.merlin.database.model.DeviceModel.deviceName
 import cn.merlin.database.model.DeviceModel.deviceNickName
 import cn.merlin.database.model.DeviceModel.deviceType
@@ -31,8 +31,8 @@ class SenderDB {
             deviceId = DeviceModel.insert {
                 it[deviceName] = device.deviceName.value
                 it[deviceIpAddress] = device.deviceIpAddress.value
-                it[deviceMacAddress] = device.deviceMacAddress.value
                 it[deviceNickName] = device.deviceName.value
+                it[deviceIdentifier] = device.deviceIdentifier.value
                 it[deviceType] = device.deviceType.value
             } get DeviceModel.deviceId
         }
@@ -48,8 +48,8 @@ class SenderDB {
                 device.deviceId = it[deviceId]
                 device.deviceIpAddress = it[deviceIpAddress]
                 device.deviceName = it[deviceName]
-                device.deviceMacAddress = it[deviceMacAddress]
                 device.deviceNickName = it[deviceNickName]
+                device.deviceIdentifier = it[deviceIdentifier]
                 device.deviceType = it[deviceType]
                 devices.add(device)
             }
@@ -64,8 +64,8 @@ class SenderDB {
             query.forEach {
                 device.deviceIpAddress = it[deviceIpAddress]
                 device.deviceName = it[deviceName]
-                device.deviceMacAddress = it[deviceMacAddress]
                 device.deviceNickName = it[deviceNickName]
+                device.deviceIdentifier = it[deviceIdentifier]
                 device.deviceType = it[deviceType]
             }
         }
@@ -88,8 +88,8 @@ class SenderDB {
                 it[messageContent] = message.messageContent.value
                 it[messageSenderIpAddress] = message.messageSenderIpAddress.value
                 it[messageReceiverIpAddress] = message.messageReceiverIpAddress.value
-                it[messageSenderMacAddress] = message.messageSenderMacAddress.value
-                it[messageReceiverMacAddress] = message.messageReceiverMacAddress.value
+                it[messageSenderIdentifier] = message.messageSenderIdentifier.value
+                it[messageReceiverIdentifier] = message.messageReceiverIdentifier.value
             } get MessageModel.messageId
         }
         return messageId
@@ -106,8 +106,8 @@ class SenderDB {
                     it[MessageModel.messageContent],
                     it[MessageModel.messageSenderIpAddress],
                     it[MessageModel.messageReceiverIpAddress],
-                    it[MessageModel.messageSenderMacAddress],
-                    it[MessageModel.messageReceiverMacAddress]
+                    it[MessageModel.messageSenderIdentifier],
+                    it[MessageModel.messageReceiverIdentifier]
                 )
                 messages.add(message)
             }

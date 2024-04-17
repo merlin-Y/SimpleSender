@@ -4,23 +4,23 @@ import cn.merlin.bean.Device
 import java.net.NetworkInterface
 
 object CurrentDeviceInformation {
-    private val currentDevice = Device()
+    private var currentDevice: Device? = null
 
     private fun getDeviceInformation() {
+        currentDevice = Device()
         val deviceName = System.getenv("COMPUTERNAME") ?: System.getenv("HOSTNAME")
-        currentDevice.deviceName = deviceName
+        currentDevice!!.deviceName = deviceName
         try {
-            val networkInterface = NetworkInterface.getNetworkInterfaces()
-            while (networkInterface.hasMoreElements()) {
-                val networkInterface = networkInterface.nextElement()
-                val inetAddresses = networkInterface.inetAddresses
-                while (inetAddresses.hasMoreElements()) {
-                    val inetAddress = inetAddresses.nextElement()
-                    if (!inetAddress.isLoopbackAddress && inetAddress.hostAddress.contains("192.168.")) {
-                        val macAddress = networkInterface.hardwareAddress
-                        val macAddressStr = macAddress.joinToString(":") { "%02X".format(it) }
-                        currentDevice.deviceMacAddress = macAddressStr
-                        currentDevice.deviceIpAddress = inetAddress.hostAddress
+            val networkInterfaces = NetworkInterface.getNetworkInterfaces()
+            while (networkInterfaces.hasMoreElements()) {
+                val networkInterface = networkInterfaces.nextElement()
+                if(networkInterface.name.startsWith("wlan", ignoreCase = true) || networkInterface.name.startsWith("WI-FI", ignoreCase = true)) {
+                    val inetAddresses = networkInterface.inetAddresses
+                    while (inetAddresses.hasMoreElements()) {
+                        val inetAddress = inetAddresses.nextElement()
+                        if (!inetAddress.isLoopbackAddress && inetAddress.hostAddress.contains("192.168.")) {
+                            currentDevice!!.deviceIpAddress = inetAddress.hostAddress
+                        }
                     }
                 }
             }
@@ -28,7 +28,10 @@ object CurrentDeviceInformation {
     }
 
     fun getInformation(): Device {
+        currentDevice?.let {
+            return currentDevice!!
+        }
         getDeviceInformation()
-        return currentDevice
+        return currentDevice!!
     }
 }

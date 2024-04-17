@@ -4,11 +4,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.LocalContentAlpha
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -17,34 +17,40 @@ import androidx.compose.ui.*
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cn.merlin.bean.Device
 import cn.merlin.bean.Message
 import cn.merlin.bean.model.DeviceModel
 import cn.merlin.bean.model.MessageModel
 import cn.merlin.database.SenderDB
-import cn.merlin.layout.mainWindow.bubble.ArrowAlignment
-import cn.merlin.layout.mainWindow.bubble.BubbleLayout
-import cn.merlin.layout.mainWindow.bubble.BubbleShadow
-import cn.merlin.layout.mainWindow.bubble.rememberBubbleState
-import cn.merlin.layout.mainWindow.chat.ChatFlexBoxLayout
-import cn.merlin.layout.mainWindow.chat.MessageTimeText
+import cn.merlin.layout.theme.TriangleLeftShape
+import cn.merlin.layout.theme.TriangleRightShape
 import cn.merlin.network.CurrentDeviceInformation
+import cn.merlin.utils.localDeviceIdentifier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlin.random.Random
+import java.io.File
 
-val currentDevice: MutableState<DeviceModel> = mutableStateOf(DeviceModel(CurrentDeviceInformation.getInformation()))
+val currentDevice = mutableStateOf(DeviceModel(Device()))
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun message(
     width: Dp,
     height: Dp,
-    senderDB: SenderDB
+    senderDB: SenderDB,
+    messageList: SnapshotStateList<MessageModel>
 ) {
     var isDragging by remember { mutableStateOf(false) }
-    val contentList: SnapshotStateList<MessageModel> = remember{ mutableStateListOf() }
-    val inputText = mutableStateOf("")
+    val inputText = remember{ mutableStateOf("") }
+    val acceptedFile = remember { mutableStateOf<File?>(null) }
+
+    messageList.clear()
+
+    val list = senderDB.selectAllMessage()
+    list.forEach {
+        messageList.add(MessageModel(it))
+    }
 
     Surface(
         modifier = Modifier.size(width, height),
@@ -96,140 +102,46 @@ fun message(
                             val dragData = state.dragData
                             if (dragData is DragData.Image) {
                                 println(dragData.readImage().toString())
-                            } else if (dragData is DragData.FilesList) {
+                            } else if (dragData is DragData.FilesList && isDragging) {
                                 dragData.readFiles().first().let {
-
+                                    val message = Message(
+                                        messageType = 1,
+                                        messageSenderIdentifier = localDeviceIdentifier.value,
+                                        messageReceiverIdentifier = currentDevice.value.deviceIdentifier.value,
+                                        messageContent = it.substring(6),
+                                        messageSenderIpAddress = CurrentDeviceInformation.getInformation().deviceIpAddress,
+                                        messageReceiverIpAddress = currentDevice.value.deviceIpAddress.value)
+                                        messageList.add(MessageModel(message))
+                                        senderDB.insertMessage(MessageModel(message))
                                     println(it)
                                 }
                             }
                             isDragging = false
                         }
-                    )
+                    ),
+                verticalArrangement = Arrangement.spacedBy(5.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                items(contentList) {
-                    val messageStatus = remember { MessageStatus.entries[Random.nextInt(3)] }
-                    if (it.messageSenderMacAddress.value == CurrentDeviceInformation.getInformation().deviceMacAddress) {
-                        SentMessageRow(
-                            drawArrow = true,
-                            text = it.messageContent.value,
-                            messageTime = "",
-                            messageStatus =messageStatus
-                        )
-//                        Text(
-//                            text = it.messageContent.value,
-//                            modifier = Modifier.wrapContentWidth(Alignment.End),
-//                            color = MaterialTheme.colorScheme.onPrimary
-//                        )
-                    } else {
-                        SentMessageRow(
-                            drawArrow = true,
-                            text = it.messageContent.value,
-                            messageTime = "",
-                            messageStatus =messageStatus
-                        )
+                items(messageList) {
+                    if(it.messageType.value == 0){
+                        SentMessageRow(it)
+                        ReceiveMessageRow(it)
+                    }
+                    else{
+
                     }
                 }
             }
-            inputField(contentList,inputText)
+            inputField(messageList, inputText, senderDB)
         }
     }
 }
-
-@Composable
-private fun SentMessageRow(
-    drawArrow: Boolean = true,
-    text: String,
-    messageTime: String,
-    messageStatus: MessageStatus
-) {
-    Column(
-        modifier = Modifier
-            .padding(start = 60.dp, end = 8.dp, top = if (drawArrow) 2.dp else 0.dp, bottom = 2.dp)
-            .fillMaxWidth()
-            .wrapContentHeight(),
-        horizontalAlignment = Alignment.End
-    ) {
-
-        BubbleLayout(
-            bubbleState = rememberBubbleState(
-                alignment = ArrowAlignment.RightTop,
-                cornerRadius = 8.dp,
-                drawArrow = drawArrow,
-            ),
-            shadow = BubbleShadow(elevation = 1.dp),
-            backgroundColor = MaterialTheme.colorScheme.primary
-        ) {
-            ChatFlexBoxLayout(
-                modifier = Modifier
-                    .padding(start = 2.dp, top = 2.dp, end = 4.dp, bottom = 2.dp),
-                text = text,
-                color = MaterialTheme.colorScheme.onPrimary,
-                messageStat = {
-                    MessageTimeText(
-                        modifier = Modifier.wrapContentSize(),
-                        messageTime = messageTime,
-                        messageStatus = messageStatus
-                    )
-                }
-            )
-        }
-    }
-}
-
-@Composable
-private fun ReceivedMessageRow(
-    drawArrow: Boolean = true,
-    text: String,
-    messageTime: String
-) {
-    Column(
-        modifier = Modifier
-            .padding(start = 8.dp, end = 60.dp, top = if (drawArrow) 2.dp else 0.dp, bottom = 2.dp)
-            .fillMaxWidth()
-            .wrapContentHeight(),
-        horizontalAlignment = Alignment.Start
-    ) {
-        BubbleLayout(
-            bubbleState = rememberBubbleState(
-                alignment = ArrowAlignment.LeftTop,
-                drawArrow = drawArrow,
-                cornerRadius = 8.dp,
-            ),
-            shadow = BubbleShadow(elevation = 1.dp)
-        ) {
-            ChatFlexBoxLayout(
-                modifier = Modifier
-                    .padding(start = 2.dp, top = 2.dp, end = 4.dp, bottom = 2.dp),
-                text = text,
-                color = MaterialTheme.colorScheme.onPrimary,
-                messageStat = {
-                    CompositionLocalProvider(LocalContentAlpha provides ContentAlpha.medium) {
-                        Text(
-                            modifier = Modifier.padding(top = 1.dp, bottom = 1.dp, end = 4.dp),
-                            text = messageTime,
-                            fontSize = 12.sp
-                        )
-                    }
-                }
-            )
-        }
-    }
-}
-
-enum class MessageStatus {
-    PENDING, RECEIVED, READ
-}
-
-data class ChatMessage(
-    val id: Long,
-    var message: String,
-    var date: Long
-)
 
 @Composable
 fun inputField(
-    contentList: SnapshotStateList<MessageModel>,
-    inputText: MutableState<String>
+    messageList: SnapshotStateList<MessageModel>,
+    inputText: MutableState<String>,
+    senderDB: SenderDB
 ) {
     Spacer(modifier = Modifier.background(MaterialTheme.colorScheme.tertiary).height(2.dp).fillMaxWidth())
     TextField(
@@ -241,23 +153,118 @@ fun inputField(
             inputText.value = it
         },
         trailingIcon = {
-                       IconButton(
-                           onClick = {
-                               CoroutineScope(Dispatchers.IO).launch{
-                                   if(inputText.value.isNotEmpty()){
-                                       contentList.add(MessageModel(Message(messageContent = inputText.value)))
-                                       inputText.value = ""
-                                   }
-                               }
-                           }
-                       ){
-                           Icon(Icons.AutoMirrored.Filled.Send,"", tint = MaterialTheme.colorScheme.onSecondaryContainer)
-                       }
+            IconButton(
+                onClick = {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        if (inputText.value.isNotEmpty()) {
+                            val message = Message(
+                                messageSenderIdentifier = localDeviceIdentifier.value,
+                                messageReceiverIdentifier = currentDevice.value.deviceIdentifier.value,
+                                messageContent = inputText.value,
+                                messageSenderIpAddress = CurrentDeviceInformation.getInformation().deviceIpAddress,
+                                messageReceiverIpAddress = currentDevice.value.deviceIpAddress.value
+                            )
+                            messageList.add(MessageModel(message))
+                            senderDB.insertMessage(MessageModel(message))
+                            inputText.value = ""
+                        }
+                    }
+                }
+            ) {
+                Icon(Icons.AutoMirrored.Filled.Send, "", tint = MaterialTheme.colorScheme.onSecondaryContainer)
+            }
         },
         colors = TextFieldDefaults.colors(
             focusedTextColor = MaterialTheme.colorScheme.onPrimary,
             unfocusedTextColor = MaterialTheme.colorScheme.onPrimary,
-            cursorColor = MaterialTheme.colorScheme.onPrimary
+            cursorColor = MaterialTheme.colorScheme.onPrimary,
+            focusedIndicatorColor = MaterialTheme.colorScheme.tertiary,
+            unfocusedIndicatorColor = MaterialTheme.colorScheme.tertiary,
+            disabledIndicatorColor = MaterialTheme.colorScheme.tertiary,
+            selectionColors = TextSelectionColors(MaterialTheme.colorScheme.onSecondaryContainer,MaterialTheme.colorScheme.onSecondaryContainer)
         )
     )
+}
+
+@Composable
+fun SentMessageRow(message: MessageModel) {
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.TopEnd
+    ){
+        Row(
+            Modifier.height(IntrinsicSize.Max),
+        ) {
+            Column(
+                modifier = Modifier
+                    .background(
+                    color = MaterialTheme.colorScheme.primary,
+                    shape = RoundedCornerShape(4.dp, 4.dp, 0.dp, 4.dp))
+                    .padding(start = 5.dp, end = 5.dp)
+            ) {
+                Box(modifier = Modifier.widthIn(0.dp,400.dp)){
+                    BasicTextField(
+                        value = message.messageContent.value,
+                        onValueChange = {},
+                        readOnly = true,
+                        modifier = Modifier.padding(5.dp),
+                        textStyle = LocalTextStyle.current.copy(
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontSize = 18.sp
+                        )
+                    )
+                }
+            }
+            Column(
+                modifier = Modifier.background(
+                    color = MaterialTheme.colorScheme.primary,
+                    shape = TriangleRightShape(10)
+                )
+                    .width(8.dp)
+                    .fillMaxHeight()
+            ) {}
+        }
+    }
+}
+
+@Composable
+fun ReceiveMessageRow(message: MessageModel) {
+    Box(
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.TopStart
+    ){
+        Row(
+            Modifier.height(IntrinsicSize.Max),
+            horizontalArrangement = Arrangement.Start
+        ) {
+            Column(
+                modifier = Modifier.background(
+                    color = MaterialTheme.colorScheme.primary,
+                    shape = TriangleLeftShape(10)
+                )
+                    .width(8.dp)
+                    .fillMaxHeight()
+            ) {}
+            Column(
+                modifier = Modifier
+                    .background(
+                    color = MaterialTheme.colorScheme.primary,
+                    shape = RoundedCornerShape(4.dp, 4.dp, 0.dp, 4.dp))
+                    .padding(start = 5.dp, end = 5.dp)
+            ) {
+                Box(modifier = Modifier.widthIn(0.dp,400.dp)){
+                    BasicTextField(
+                        value = message.messageContent.value,
+                        onValueChange = {},
+                        readOnly = true,
+                        modifier = Modifier.padding(5.dp),
+                        textStyle = LocalTextStyle.current.copy(
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            fontSize = 18.sp
+                        )
+                    )
+                }
+            }
+        }
+    }
 }

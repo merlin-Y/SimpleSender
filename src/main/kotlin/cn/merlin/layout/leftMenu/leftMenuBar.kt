@@ -4,12 +4,14 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -23,21 +25,19 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cn.merlin.bean.model.DeviceModel
-import cn.merlin.layout.mainWindow.*
+import cn.merlin.layout.mainWindow.currentDevice
 import cn.merlin.layout.theme.TWEEN_DURATION
 import cn.merlin.layout.topbar.isMenuBarPickUp
-import cn.merlin.network.Sender
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import moe.tlaster.precompose.navigation.Navigator
-import java.io.File
-
-val sender = Sender()
 
 @Composable
 fun leftMenuBar(
-    localDeviceList: SnapshotStateList<DeviceModel>,
     width: Dp,
-    navigator: Navigator
+    navigator: Navigator,
+    localDeviceList: SnapshotStateList<DeviceModel>
 ) {
     val leftButtonMenuHeight = animateDpAsState(if (!isMenuBarPickUp.value) 455.dp else 500.dp, TweenSpec(300))
 
@@ -113,7 +113,6 @@ fun MenuItem(
             when (text) {
                 "搜索设备" -> {
                     navigator.navigate("/detect")
-                    sender.detectDevices()
                 }
                 "系统设置" -> {
                     navigator.navigate("/settings")

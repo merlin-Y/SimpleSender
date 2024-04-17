@@ -1,6 +1,5 @@
 package cn.merlin.network
 
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import cn.merlin.bean.Device
 import cn.merlin.bean.model.DeviceModel
@@ -11,38 +10,34 @@ import java.io.ObjectOutputStream
 import java.net.*
 import kotlin.math.ceil
 
-val DetectedDevices: SnapshotStateList<DeviceModel> = mutableStateListOf()
-
+val detectedDeviceIdentifierList: MutableList<String> = mutableListOf()
 class Sender {
-
+    private val sendRequestPort = 19999
     private var currentDevice = Device()
 
-    fun detectDevices() {
+    fun startScanning() {
         CoroutineScope(Dispatchers.IO).launch {
-            currentDevice = CurrentDeviceInformation.getInformation()
-            val ipAddressIndex =
-                currentDevice.deviceIpAddress.substring(0, currentDevice.deviceIpAddress.lastIndexOf("."))
-            println("Scanning from $ipAddressIndex.1~$ipAddressIndex.255")
-            for (i in 1..255) {
-                CoroutineScope(Dispatchers.IO).launch {
-                    val ipAddress = "$ipAddressIndex.$i"
-                    if (ipAddress == currentDevice.deviceIpAddress) cancel()
-                    try {
-                        val socket = Socket()
-                        socket.connect(InetSocketAddress(ipAddress, 19999), 100)
-                        val objectOutputStream = ObjectOutputStream(socket.getOutputStream())
-                        val objectInputStream = ObjectInputStream(socket.getInputStream())
-                        objectOutputStream.writeInt(1)
-                        objectOutputStream.flush()
-                        val device = objectInputStream.readObject() as Device
-                        DetectedDevices.add(DeviceModel(device))
-                        socket.close()
-                    } catch (e: Exception) {
-//                            print(e)
-                    }
+            while(true){
+                currentDevice = CurrentDeviceInformation.getInformation()
+                val commandCode = "SimpleSender"
+                val broadcastAddress = InetAddress.getByName(currentDevice.deviceIpAddress.substring(0,currentDevice.deviceIpAddress.lastIndexOf('.') + 1) + "255")
+                val sendMessage = "$commandCode;${currentDevice.deviceIpAddress}"
+                val sendMessageArray = ByteArray(sendMessage.length + 2)
+                sendMessageArray[0] = (sendMessage.length shr 8).toByte()
+                sendMessageArray[1] = sendMessage.length.toByte()
+                System.arraycopy(sendMessage.toByteArray(Charsets.UTF_8),0,sendMessageArray,2,sendMessage.length)
+                val socket = DatagramSocket()
+                try{
+                    socket.broadcast = true
+                    val packet =
+                        DatagramPacket(sendMessageArray, sendMessage.length + 2, broadcastAddress, sendRequestPort)
+                    socket.send(packet)
+                }catch (_: Exception){
+                    socket.close()
                 }
+                socket.close()
+                delay(2000)
             }
-            println("Scanning accomplished")
         }
     }
 
@@ -61,10 +56,17 @@ class Sender {
                 objectOutputStream.flush()
                 val requestCode = objectInputStream.readInt()
                 if (requestCode == 1) {
-                    objectOutputStream.writeObject(cn.merlin.database.model.FileModel(file.name, data.size, totalPackets))
+                    objectOutputStream.writeObject(
+                        cn.merlin.database.model.FileModel(
+                            file.name,
+                            data.size,
+                            totalPackets
+                        )
+                    )
                     objectOutputStream.flush()
                 } else this.cancel()
                 val port = objectInputStream.readInt()
+                socket.close()
                 for (i in 0 until totalPackets) {
                     val offset = i * packetSize
                     val length = if (offset + packetSize < data.size) packetSize else data.size - offset
@@ -73,7 +75,7 @@ class Sender {
                     packetData[1] = i.toByte()
                     packetData[2] = (length shr 8).toByte()
                     packetData[3] = length.toByte()
-                    System.arraycopy(data,offset,packetData,4,length)
+                    System.arraycopy(data, offset, packetData, 4, length)
 //                        data.copyOfRange(offset, offset + length )
                     val packet = DatagramPacket(
                         packetData,
@@ -83,7 +85,7 @@ class Sender {
                     )
                     datagramSocket.send(packet)
                 }
-                socket.close()
+
                 datagramSocket.close()
             } catch (e: Exception) {
                 println(e)

@@ -8,8 +8,8 @@ object MessageModel : Table() {
     val messageContent = varchar("messageContent",50)
     val messageSenderIpAddress = varchar("senderIpAddress",50)
     val messageReceiverIpAddress = varchar("receiverIpAddress",50)
-    val messageSenderMacAddress = varchar("senderMacAddress",50)
-    val messageReceiverMacAddress = varchar("receiverMacAddress",50)
+    val messageSenderIdentifier = varchar("messageSenderIdentifier",50)
+    val messageReceiverIdentifier = varchar("messageReceiverIdentifier",50)
 
     override val primaryKey = PrimaryKey(messageId,name = "messageId")
 }

@@ -5,6 +5,7 @@ val exposedVersion = "0.48.0"
 plugins {
     kotlin("jvm")
     id("org.jetbrains.compose")
+    kotlin("plugin.serialization") version "1.9.22"
 }
 
 group = "cn.merlin"
@@ -40,6 +41,7 @@ dependencies {
 //    implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.23.1")
     implementation("org.apache.logging.log4j:log4j-core:2.23.1")
     implementation("com.github.tkuenneth:nativeparameterstoreaccess:0.1.2") //读取系统设置，动态响应颜色变化。
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 }
 
 compose.desktop {

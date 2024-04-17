@@ -1,23 +1,26 @@
 package cn.merlin.utils
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import cn.merlin.bean.model.DeviceModel
 import cn.merlin.database.SenderDB
 import cn.merlin.layout.theme.isInDarkMode
 import cn.merlin.layout.theme.isSystemInDarkTheme
+import cn.merlin.network.CurrentDeviceInformation
 import kotlinx.coroutines.*
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.nio.file.Paths
 import java.util.Properties
+import java.util.UUID
 
 const val TIME_BETWEEN = 500
 val resourcesPath = mutableStateOf("")
 val settingsPath = mutableStateOf("")
 val databasePath = mutableStateOf("")
+val localDeviceIdentifier = mutableStateOf("")
+val localDeviceName = mutableStateOf("")
 val changeTheme = mutableStateOf(0)
 val data = Properties()
 
@@ -56,9 +59,11 @@ fun getAllSettings() {
     if (data["changeTheme"] == "0") changeTheme.value = 0
     else if (data["changeTheme"] == "1") changeTheme.value = 1
     else changeTheme.value = 2
+    localDeviceIdentifier.value = data["localDeviceIdentifier"].toString()
+    localDeviceName.value = data["localDeviceName"].toString()
 }
 
-fun getLocalDevice(localDeviceList: SnapshotStateList<DeviceModel>, senderDB: SenderDB) {
+fun getLocalDevice(localDeviceList: SnapshotStateList<DeviceModel>,senderDB: SenderDB) {
     if (localDeviceList.isNotEmpty()) return
     CoroutineScope(Dispatchers.IO).launch {
         val deviceList = senderDB.selectAllDevice()
@@ -68,14 +73,16 @@ fun getLocalDevice(localDeviceList: SnapshotStateList<DeviceModel>, senderDB: Se
     }
 }
 
-fun updateSettings(key: String, value: Int) {
-    data[key] = value.toString()
+fun updateSettings(key: String, value: String) {
+    data[key] = value
     data.store(FileOutputStream(settingsPath.value), "$key Changed")
 }
 
 fun initializeProperties(data: Properties) {
     data["IsInitialed"] = "1"
     data["changeTheme"] = "0"
+    data["localDeviceIdentifier"] = UUID.randomUUID().toString()
+    data["localDeviceName"] = "-1"
 //    data["userProfile"] = getUserProfile()
     data.store(FileOutputStream(settingsPath.value), "Data Initialed")
 }
