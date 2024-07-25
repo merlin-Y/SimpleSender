@@ -1,4 +1,4 @@
-package cn.merlin.layout.mainWindow
+package cn.merlin.ui.pages
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -10,18 +10,17 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cn.merlin.layout.dialog.ChangeDeviceNameDialog
-import cn.merlin.network.CurrentDeviceInformation
-import cn.merlin.utils.changeTheme
-import cn.merlin.utils.localDeviceName
-import cn.merlin.utils.updateSettings
+import cn.merlin.ui.dialog.ChangeDeviceNameDialog
+import cn.merlin.tools.changeTheme
+import cn.merlin.tools.localDeviceName
+import cn.merlin.tools.updateSettings
+import cn.merlin.ui.components.TextInputFieldTwo
 
 @Composable
 fun settings(
@@ -30,6 +29,7 @@ fun settings(
 ) {
     val expend = remember{ mutableStateOf(false) }
     val isDialogShow = remember{ mutableStateOf(false) }
+    val text = TextFieldValue()
 
     Surface(
         modifier = Modifier.size(width, height),
@@ -124,6 +124,7 @@ fun settings(
                         }
                     }
                 }
+
                 item {
                     Row(
                         modifier = Modifier.padding(end = 60.dp)
@@ -142,7 +143,7 @@ fun settings(
                                 }
                             ){
                                 Text(
-                                    if(localDeviceName.value == "-1") CurrentDeviceInformation.getInformation().deviceName else localDeviceName.value,
+                                    text = if(currentDevice.value.deviceNickName.value == "") currentDevice.value.deviceName.value else currentDevice.value.deviceNickName.value,
                                     color = MaterialTheme.colorScheme.onSecondary,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
@@ -156,3 +157,4 @@ fun settings(
         }
     }
 }
+

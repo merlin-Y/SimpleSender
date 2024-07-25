@@ -12,20 +12,25 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
-import cn.merlin.bean.model.DeviceModel
-import cn.merlin.bean.model.MessageModel
+import cn.merlin.bean.model.DeviceViewModel
+import cn.merlin.bean.model.MessageVIewModel
 import cn.merlin.database.SenderDB
-import cn.merlin.layout.leftMenu.leftMenuBar
-import cn.merlin.layout.mainWindow.detect
-import cn.merlin.layout.mainWindow.history
-import cn.merlin.layout.mainWindow.message
-import cn.merlin.layout.mainWindow.settings
-import cn.merlin.layout.topbar.TittleBar
-import cn.merlin.layout.theme.MainTheme
-import cn.merlin.layout.topbar.isMenuBarPickUp
+import cn.merlin.network.NetworkController
+import cn.merlin.ui.leftMenuBar
+import cn.merlin.ui.pages.detect
+import cn.merlin.ui.pages.history
+import cn.merlin.ui.pages.message
+import cn.merlin.ui.pages.settings
+import cn.merlin.ui.TittleBar
+import cn.merlin.ui.theme.MainTheme
+import cn.merlin.ui.isMenuBarPickUp
 import cn.merlin.network.Receiver
 import cn.merlin.network.Sender
-import cn.merlin.utils.*
+import cn.merlin.tools.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import moe.tlaster.precompose.PreComposeApp
 import moe.tlaster.precompose.navigation.NavHost
 import moe.tlaster.precompose.navigation.rememberNavigator
@@ -33,26 +38,28 @@ import moe.tlaster.precompose.navigation.transition.NavTransition
 
 @Composable
 fun App( menuBarWidth: Dp, windowState: WindowState) {
+    createAllResourcesFiles()
+    getAllSettings()
+    getUserProfile()
+    detectDarkMode()
+
     PreComposeApp {
-        val localDeviceList: SnapshotStateList<DeviceModel> = remember{ mutableStateListOf() }
-        val detectedDeviceList: SnapshotStateList<DeviceModel> = remember{ mutableStateListOf() }
+        val savedDeviceList: SnapshotStateList<DeviceViewModel> = remember{ mutableStateListOf() }
+        val detectedDeviceList: SnapshotStateList<DeviceViewModel> = remember{ mutableStateListOf() }
         val navigator = rememberNavigator()
-        val messageList: SnapshotStateList<MessageModel> = mutableStateListOf()
-
-        val sender = Sender()
-        val receiver = Receiver()
-
-        createAllResourcesFiles()
+        val messageList: SnapshotStateList<MessageVIewModel> = mutableStateListOf()
         val senderDB = SenderDB()
-        senderDB.createTables()
-        getAllSettings()
-        getUserProfile()
-        detectDarkMode()
+        val networkController = NetworkController()
 
         LaunchedEffect(Unit){
-            getLocalDevice(localDeviceList,senderDB)
-            sender.startScanning()
-            receiver.startServer(detectedDeviceList)
+            withContext(Dispatchers.IO){
+                senderDB.createTables()
+                getSavedDevice(savedDeviceList,senderDB)
+            }
+            withContext(Dispatchers.Default){
+                getDeviceName()
+                networkController.startNetworkControl(detectedDeviceList)
+            }
         }
 
         Surface(
@@ -61,7 +68,7 @@ fun App( menuBarWidth: Dp, windowState: WindowState) {
             Column {
                 TittleBar("Icons/PaperPlane.png", "SimpleSender", windowState)
                 Row {
-                    leftMenuBar(menuBarWidth, navigator,localDeviceList)/*  MenuBarWidth */
+                    leftMenuBar(menuBarWidth, navigator,savedDeviceList)/*  MenuBarWidth */
                     Surface {
 //                            message(900.dp - menuBarWidth, 700.dp,senderDB,messageList)
                         NavHost(
@@ -79,7 +86,7 @@ fun App( menuBarWidth: Dp, windowState: WindowState) {
                                 route = "/detect",
                                 navTransition = NavTransition()
                             ) {
-                                detect(900.dp - menuBarWidth, 700.dp,detectedDeviceList,localDeviceList)
+                                detect(900.dp - menuBarWidth, 700.dp,savedDeviceList,detectedDeviceList)
                             }
                             scene(
                                 route = "/settings",
@@ -102,7 +109,6 @@ fun App( menuBarWidth: Dp, windowState: WindowState) {
 }
 
 fun main() = application {
-
     val windowState = rememberWindowState(size = DpSize(height = 700.dp, width = 900.dp))
     val menuBarWidth = animateDpAsState(if (isMenuBarPickUp.value) 60.dp else 180.dp, TweenSpec(400))
     MainTheme {

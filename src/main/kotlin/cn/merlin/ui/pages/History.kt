@@ -1,4 +1,4 @@
-package cn.merlin.layout.mainWindow
+package cn.merlin.ui.pages
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*

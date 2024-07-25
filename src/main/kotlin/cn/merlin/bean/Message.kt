@@ -1,8 +1,9 @@
 package cn.merlin.bean
 
-import java.io.Serializable
+import kotlinx.serialization.Serializable
 
 
+@Serializable
 class Message (
     val messageId: Int = 0,
     val messageType: Int = 0,
@@ -11,4 +12,4 @@ class Message (
     val messageReceiverIpAddress: String = "",
     val messageSenderIdentifier: String = "",
     val messageReceiverIdentifier: String = ""
-):Serializable
+)

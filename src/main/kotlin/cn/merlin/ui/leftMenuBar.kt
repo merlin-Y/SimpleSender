@@ -1,4 +1,4 @@
-package cn.merlin.layout.leftMenu
+package cn.merlin.ui
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.TweenSpec
@@ -24,10 +24,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cn.merlin.bean.model.DeviceModel
-import cn.merlin.layout.mainWindow.currentDevice
-import cn.merlin.layout.theme.TWEEN_DURATION
-import cn.merlin.layout.topbar.isMenuBarPickUp
+import cn.merlin.bean.model.DeviceViewModel
+import cn.merlin.ui.pages.currentDevice
+import cn.merlin.ui.theme.TWEEN_DURATION
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,7 +36,7 @@ import moe.tlaster.precompose.navigation.Navigator
 fun leftMenuBar(
     width: Dp,
     navigator: Navigator,
-    localDeviceList: SnapshotStateList<DeviceModel>
+    localDeviceList: SnapshotStateList<DeviceViewModel>
 ) {
     val leftButtonMenuHeight = animateDpAsState(if (!isMenuBarPickUp.value) 455.dp else 500.dp, TweenSpec(300))
 
@@ -148,7 +147,7 @@ fun MenuItem(
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ListItem(
-    deviceModel: DeviceModel,
+    deviceModel: DeviceViewModel,
     navigator: Navigator,
 ) {
     val text = if(deviceModel.deviceNickName.value != "") deviceModel.deviceNickName.value else deviceModel.deviceName.value

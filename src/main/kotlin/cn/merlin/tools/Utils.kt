@@ -1,28 +1,32 @@
-package cn.merlin.utils
+package cn.merlin.tools
 
 import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
-import cn.merlin.bean.model.DeviceModel
+import cn.merlin.bean.Device
+import cn.merlin.bean.model.DeviceViewModel
 import cn.merlin.database.SenderDB
-import cn.merlin.layout.theme.isInDarkMode
-import cn.merlin.layout.theme.isSystemInDarkTheme
-import cn.merlin.network.CurrentDeviceInformation
+import cn.merlin.ui.theme.isInDarkMode
+import cn.merlin.ui.theme.isSystemInDarkTheme
 import kotlinx.coroutines.*
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.net.NetworkInterface
 import java.nio.file.Paths
 import java.util.Properties
 import java.util.UUID
 
 const val TIME_BETWEEN = 500
+val currentDevice = mutableStateOf(DeviceViewModel(Device(deviceName = "我的设备")))
 val resourcesPath = mutableStateOf("")
 val settingsPath = mutableStateOf("")
 val databasePath = mutableStateOf("")
-val localDeviceIdentifier = mutableStateOf("")
 val localDeviceName = mutableStateOf("")
 val changeTheme = mutableStateOf(0)
+val isWifiConnected = mutableStateOf(false)
 val data = Properties()
+val detectedDeviceIdentifierSet: MutableSet<String> = mutableSetOf()
+val savedDeviceIdentifierSet: MutableSet<String> = mutableSetOf()
 
 fun getUserProfile(): String {
     var userProfile = ""
@@ -59,16 +63,45 @@ fun getAllSettings() {
     if (data["changeTheme"] == "0") changeTheme.value = 0
     else if (data["changeTheme"] == "1") changeTheme.value = 1
     else changeTheme.value = 2
-    localDeviceIdentifier.value = data["localDeviceIdentifier"].toString()
-    localDeviceName.value = data["localDeviceName"].toString()
+    currentDevice.value.deviceIdentifier.value = data["localDeviceIdentifier"].toString()
+    currentDevice.value.deviceNickName.value = data["localDeviceName"].toString()
 }
 
-fun getLocalDevice(localDeviceList: SnapshotStateList<DeviceModel>,senderDB: SenderDB) {
-    if (localDeviceList.isNotEmpty()) return
+fun getDeviceName(){
+    currentDevice.value.deviceName.value = System.getenv("COMPUTERNAME") ?: System.getenv("HOSTNAME")
+}
+
+fun getWifiAddress(): Boolean {
+    try {
+        val networkInterfaces = NetworkInterface.getNetworkInterfaces()
+        while (networkInterfaces.hasMoreElements()) {
+            val networkInterface = networkInterfaces.nextElement()
+            if(networkInterface.name.startsWith("wlan", ignoreCase = true) || networkInterface.name.startsWith("WI-FI", ignoreCase = true)) {
+                val inetAddresses = networkInterface.inetAddresses
+                while (inetAddresses.hasMoreElements()) {
+                    val inetAddress = inetAddresses.nextElement()
+                    if (!inetAddress.isLoopbackAddress && inetAddress.hostAddress.contains("192.168.")) {
+                        if(inetAddress.hostAddress != "")   isWifiConnected.value = true
+                        else   isWifiConnected.value = false
+                        currentDevice.value.deviceIpAddress.value = inetAddress.hostAddress
+                        return true
+                    }
+                }
+            }
+        }
+        return false
+    } catch (_: Exception) {
+        return false
+    }
+}
+
+fun getSavedDevice(savedDeviceList: SnapshotStateList<DeviceViewModel>, senderDB: SenderDB) {
+    if (savedDeviceList.isNotEmpty()) return
     CoroutineScope(Dispatchers.IO).launch {
         val deviceList = senderDB.selectAllDevice()
         deviceList.forEach {
-            localDeviceList.add(DeviceModel(it))
+            savedDeviceList.add(DeviceViewModel(it))
+            savedDeviceIdentifierSet.add(it.deviceIdentifier)
         }
     }
 }
@@ -83,7 +116,7 @@ fun initializeProperties(data: Properties) {
     data["changeTheme"] = "0"
     data["localDeviceIdentifier"] = UUID.randomUUID().toString()
     data["localDeviceName"] = "-1"
-//    data["userProfile"] = getUserProfile()
+    data["userProfile"] = getUserProfile()
     data.store(FileOutputStream(settingsPath.value), "Data Initialed")
 }
 

@@ -1,4 +1,4 @@
-package cn.merlin.layout.dialog
+package cn.merlin.ui.dialog
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -11,8 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import cn.merlin.network.CurrentDeviceInformation
-import cn.merlin.utils.updateSettings
+import cn.merlin.tools.currentDevice
+import cn.merlin.tools.updateSettings
 
 @Composable
 fun ChangeDeviceNameDialog(isDialogShow: MutableState<Boolean>) {
@@ -31,7 +31,7 @@ fun ChangeDeviceNameDialog(isDialogShow: MutableState<Boolean>) {
                 modifier = Modifier.padding(10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("修改当前设备名（当前${if(cn.merlin.utils.localDeviceName.value == "-1") CurrentDeviceInformation.getInformation().deviceName else cn.merlin.utils.localDeviceName.value})")
+                Text("修改当前设备名（当前${if(cn.merlin.tools.localDeviceName.value == "-1") currentDevice.value.deviceName.value else cn.merlin.tools.localDeviceName.value})")
                 TextField(
                     localDeviceName.value,
                     onValueChange = { localDeviceName.value = it },
@@ -46,7 +46,7 @@ fun ChangeDeviceNameDialog(isDialogShow: MutableState<Boolean>) {
                 Button(onClick = {
                     if(localDeviceName.value.isNotEmpty()) {
                         updateSettings("localDeviceName",localDeviceName.value)
-                        cn.merlin.utils.localDeviceName.value = localDeviceName.value
+                        cn.merlin.tools.localDeviceName.value = localDeviceName.value
                         isDialogShow.value = false
                     }
                 }) {

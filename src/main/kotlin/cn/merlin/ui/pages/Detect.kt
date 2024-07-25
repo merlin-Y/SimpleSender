@@ -1,4 +1,4 @@
-package cn.merlin.layout.mainWindow
+package cn.merlin.ui.pages
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -14,15 +14,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cn.merlin.bean.model.DeviceModel
+import cn.merlin.bean.model.DeviceViewModel
+import cn.merlin.tools.savedDeviceIdentifierSet
 
 
 @Composable
 fun detect(
     width: Dp,
     height: Dp,
-    detectedDeviceList: SnapshotStateList<DeviceModel>,
-    localDeviceList: SnapshotStateList<DeviceModel>
+    savedDeviceList: SnapshotStateList<DeviceViewModel>,
+    detectedDeviceList: SnapshotStateList<DeviceViewModel>
 ) {
 
     Surface(
@@ -44,24 +45,25 @@ fun detect(
             ) {
                 for (device in detectedDeviceList) {
                     item {
-                        DeviceCard(device,localDeviceList)
+                        DeviceCard(device,savedDeviceList,detectedDeviceList)
                     }
                 }
             }
         }
     }
-
 }
 
 @Composable
-fun DeviceCard(device: DeviceModel,localDeviceList: SnapshotStateList<DeviceModel>) {
+fun DeviceCard(device: DeviceViewModel, savedDeviceList: SnapshotStateList<DeviceViewModel>,detectedDeviceList: SnapshotStateList<DeviceViewModel>) {
     Button(
         shape = MaterialTheme.shapes.extraLarge,
-        modifier = Modifier.size(if (device.deviceIpAddress.value == "192.168.31.216") 180.dp else if (device.deviceIpAddress.value == "192.168.31.10") 160.dp else 120.dp)
+        modifier = Modifier.size(180.dp)
             .padding(top = 20.dp, start = 20.dp),
         onClick = {
-            device.inListType.value = false
-            localDeviceList.add(device)
+            if(!savedDeviceIdentifierSet.contains(device.deviceIdentifier.value)) {
+                device.inListType.value = false
+                savedDeviceList.add(device)
+            }
 
         }
     ) {

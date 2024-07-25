@@ -3,7 +3,7 @@ package cn.merlin.bean.model
 import androidx.compose.runtime.mutableStateOf
 import cn.merlin.bean.Message
 
-class MessageModel(message: Message) {
+class MessageVIewModel(message: Message) {
     var messageId = mutableStateOf(message.messageId)
     var messageType = mutableStateOf(message.messageType)
     var messageContent = mutableStateOf(message.messageContent)

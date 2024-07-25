@@ -1,4 +1,4 @@
-package cn.merlin.layout.theme
+package cn.merlin.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

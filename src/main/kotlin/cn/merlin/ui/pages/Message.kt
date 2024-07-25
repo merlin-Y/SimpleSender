@@ -1,4 +1,4 @@
-package cn.merlin.layout.mainWindow
+package cn.merlin.ui.pages
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -19,19 +19,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cn.merlin.bean.Device
 import cn.merlin.bean.Message
-import cn.merlin.bean.model.DeviceModel
-import cn.merlin.bean.model.MessageModel
+import cn.merlin.bean.model.DeviceViewModel
+import cn.merlin.bean.model.MessageVIewModel
 import cn.merlin.database.SenderDB
-import cn.merlin.layout.theme.TriangleLeftShape
-import cn.merlin.layout.theme.TriangleRightShape
-import cn.merlin.network.CurrentDeviceInformation
-import cn.merlin.utils.localDeviceIdentifier
+import cn.merlin.ui.theme.TriangleLeftShape
+import cn.merlin.ui.theme.TriangleRightShape
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 
-val currentDevice = mutableStateOf(DeviceModel(Device()))
+val currentDevice = mutableStateOf(DeviceViewModel(Device()))
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -39,7 +37,7 @@ fun message(
     width: Dp,
     height: Dp,
     senderDB: SenderDB,
-    messageList: SnapshotStateList<MessageModel>
+    messageList: SnapshotStateList<MessageVIewModel>
 ) {
     var isDragging by remember { mutableStateOf(false) }
     val inputText = remember{ mutableStateOf("") }
@@ -49,7 +47,7 @@ fun message(
 
     val list = senderDB.selectAllMessage()
     list.forEach {
-        messageList.add(MessageModel(it))
+        messageList.add(MessageVIewModel(it))
     }
 
     Surface(
@@ -106,13 +104,13 @@ fun message(
                                 dragData.readFiles().first().let {
                                     val message = Message(
                                         messageType = 1,
-                                        messageSenderIdentifier = localDeviceIdentifier.value,
+                                        messageSenderIdentifier = currentDevice.value.deviceIdentifier.value,
                                         messageReceiverIdentifier = currentDevice.value.deviceIdentifier.value,
                                         messageContent = it.substring(6),
-                                        messageSenderIpAddress = CurrentDeviceInformation.getInformation().deviceIpAddress,
+                                        messageSenderIpAddress = cn.merlin.tools.currentDevice.value.deviceIpAddress.value,
                                         messageReceiverIpAddress = currentDevice.value.deviceIpAddress.value)
-                                        messageList.add(MessageModel(message))
-                                        senderDB.insertMessage(MessageModel(message))
+                                        messageList.add(MessageVIewModel(message))
+                                        senderDB.insertMessage(MessageVIewModel(message))
                                     println(it)
                                 }
                             }
@@ -139,7 +137,7 @@ fun message(
 
 @Composable
 fun inputField(
-    messageList: SnapshotStateList<MessageModel>,
+    messageList: SnapshotStateList<MessageVIewModel>,
     inputText: MutableState<String>,
     senderDB: SenderDB
 ) {
@@ -158,14 +156,14 @@ fun inputField(
                     CoroutineScope(Dispatchers.IO).launch {
                         if (inputText.value.isNotEmpty()) {
                             val message = Message(
-                                messageSenderIdentifier = localDeviceIdentifier.value,
+                                messageSenderIdentifier = currentDevice.value.deviceIdentifier.value,
                                 messageReceiverIdentifier = currentDevice.value.deviceIdentifier.value,
                                 messageContent = inputText.value,
-                                messageSenderIpAddress = CurrentDeviceInformation.getInformation().deviceIpAddress,
+                                messageSenderIpAddress = currentDevice.value.deviceIpAddress.value,
                                 messageReceiverIpAddress = currentDevice.value.deviceIpAddress.value
                             )
-                            messageList.add(MessageModel(message))
-                            senderDB.insertMessage(MessageModel(message))
+                            messageList.add(MessageVIewModel(message))
+                            senderDB.insertMessage(MessageVIewModel(message))
                             inputText.value = ""
                         }
                     }
@@ -187,7 +185,7 @@ fun inputField(
 }
 
 @Composable
-fun SentMessageRow(message: MessageModel) {
+fun SentMessageRow(message: MessageVIewModel) {
     Box(
         modifier = Modifier.fillMaxWidth(),
         contentAlignment = Alignment.TopEnd
@@ -228,7 +226,7 @@ fun SentMessageRow(message: MessageModel) {
 }
 
 @Composable
-fun ReceiveMessageRow(message: MessageModel) {
+fun ReceiveMessageRow(message: MessageVIewModel) {
     Box(
         modifier = Modifier.fillMaxWidth(),
         contentAlignment = Alignment.TopStart

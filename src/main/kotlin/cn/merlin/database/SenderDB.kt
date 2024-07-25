@@ -10,7 +10,7 @@ import cn.merlin.database.model.DeviceModel.deviceName
 import cn.merlin.database.model.DeviceModel.deviceNickName
 import cn.merlin.database.model.DeviceModel.deviceType
 import cn.merlin.database.model.MessageModel
-import cn.merlin.utils.databasePath
+import cn.merlin.tools.databasePath
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -25,7 +25,7 @@ class SenderDB {
         }
     }
 
-    fun insertDevice(device: cn.merlin.bean.model.DeviceModel): Int {
+    fun insertDevice(device: cn.merlin.bean.model.DeviceViewModel): Int {
         var deviceId: Int = -1
         transaction {
             deviceId = DeviceModel.insert {
@@ -80,7 +80,7 @@ class SenderDB {
         return result
     }
 
-    fun insertMessage(message: cn.merlin.bean.model.MessageModel): Int {
+    fun insertMessage(message: cn.merlin.bean.model.MessageVIewModel): Int {
         var messageId: Int = -1
         transaction {
             messageId = MessageModel.insert {

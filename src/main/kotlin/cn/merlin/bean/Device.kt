@@ -2,7 +2,6 @@ package cn.merlin.bean
 
 import kotlinx.serialization.Serializable
 
-
 @Serializable
 data class Device(
     var deviceId: Int = -1,

@@ -2,8 +2,9 @@ package cn.merlin.network
 
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import cn.merlin.bean.Device
-import cn.merlin.bean.model.DeviceModel
-import cn.merlin.utils.getUserProfile
+import cn.merlin.bean.model.DeviceViewModel
+import cn.merlin.tools.detectedDeviceIdentifierSet
+import cn.merlin.tools.getUserProfile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -16,81 +17,118 @@ import java.net.InetAddress
 
 class Receiver {
     private val receiveCommandCodePort = 19999
-    private val receiveRequestPort = 20000
-    private val receivedPort = mutableSetOf(20000)
-    private var currentDevice = Device()
+    private val receiveDeviceCodePort = 20000
+    private val receiveMessageCodePort = 20001
+    private val receivedPort: MutableSet<Int> = mutableSetOf()
 
-    fun startServer(detectedDeviceList: SnapshotStateList<DeviceModel>) {
-        currentDevice = CurrentDeviceInformation.getInformation()
-
+    fun startDetectCodeReceiver(currentDevice: Device) {
         CoroutineScope(Dispatchers.IO).launch {
-            while (true) {
-                val receiverSocket = DatagramSocket(receiveCommandCodePort)
-                val receiverBuffer = ByteArray(64)
-                val receiverPacket = DatagramPacket(receiverBuffer, receiverBuffer.size)
-                try {
-                    receiverSocket.receive(receiverPacket)
-                    receiverSocket.close()
-                    val length = (receiverPacket.data[0].toInt() shl 8) or (receiverPacket.data[1].toInt() and 0xFF)
+            val receiveSocket = DatagramSocket(receiveCommandCodePort)
+            val receiveBuffer = ByteArray(64)
+            val receivePacket = DatagramPacket(receiveBuffer, receiveBuffer.size)
+            try {
+                while (true) {
+                    receiveSocket.receive(receivePacket)
+                    val length =
+                        (receivePacket.data[0].toInt() shl 8) or (receivePacket.data[1].toInt() and 0xFF)
                     val buffer = ByteArray(length)
-                    System.arraycopy(receiverPacket.data,2,buffer,0,length)
-                    val cod = buffer.toString(Charsets.UTF_8)
-                    if(cod.contains("SimpleSender")){
-                        try{
+                    System.arraycopy(receivePacket.data, 2, buffer, 0, length)
+                    val cnb = buffer.toString(Charsets.UTF_8)
+                    if (cnb.contains("detectCode")) {
+                        val socket = DatagramSocket()
+                        try {
                             val deviceJson = Json.encodeToString(currentDevice)
-                            val ipAddress = cod.substring(cod.lastIndexOf(';') + 1, cod.length)
-                            if(ipAddress != currentDevice.deviceIpAddress) {
-                                val sendMessageArray = ByteArray(deviceJson.length + 12)
-                                sendMessageArray[0] = ((deviceJson.length + 10) shr 8).toByte()
-                                sendMessageArray[1] = (deviceJson.length + 10).toByte()
-                                System.arraycopy("ipaddress;".toByteArray(), 0, sendMessageArray, 2, 10)
-                                System.arraycopy(deviceJson.toByteArray(), 0, sendMessageArray, 12, deviceJson.length)
-                                val socket = DatagramSocket()
+                            val ipAddress = cnb.substring(cnb.lastIndexOf(';') + 1, cnb.length)
+                            if (ipAddress != currentDevice.deviceIpAddress) {
+                                val sendMessage = "receiveDevice;$deviceJson"
+                                val sendMessageArray = ByteArray(sendMessage.length + 2)
+                                sendMessageArray[0] = ((sendMessage.length) shr 8).toByte()
+                                sendMessageArray[1] = (sendMessage.length).toByte()
+                                System.arraycopy(
+                                    sendMessage.toByteArray(Charsets.UTF_8),
+                                    0,
+                                    sendMessageArray,
+                                    2,
+                                    sendMessage.length
+                                )
                                 val packet = DatagramPacket(
                                     sendMessageArray,
-                                    deviceJson.length + 12,
+                                    sendMessageArray.size,
                                     InetAddress.getByName(ipAddress),
-                                    20000
+                                    receiveDeviceCodePort
                                 )
                                 socket.send(packet)
                                 socket.close()
                             }
-                        }catch (_: Exception){ }
+                        } catch (_: Exception) {
+                            socket.close()
+                        }
                     }
-                } catch (_: Exception) {
-                    receiverSocket.close()
                 }
-            }
-        }
-        CoroutineScope(Dispatchers.IO).launch {
-            while (true) {
-                val receiverSocket = DatagramSocket(receiveRequestPort)
-                val receiverBuffer = ByteArray(512)
-                val receiverPacket = DatagramPacket(receiverBuffer, receiverBuffer.size)
-                try {
-                    receiverSocket.receive(receiverPacket)
-                    receiverSocket.close()
-                    val length = (receiverPacket.data[0].toInt() shl 8) or (receiverPacket.data[1].toInt() and 0xFF)
-                    val buffer = ByteArray(length)
-                    System.arraycopy(receiverPacket.data,2,buffer,0,length)
-                    val cod = buffer.toString(Charsets.UTF_8)
-                    if(cod.contains("ipaddress")){
-                        val device = Json.decodeFromString<Device>(cod.substring(cod.lastIndexOf(';') + 1,cod.length))
-                        detectedDeviceList.add(DeviceModel(device))
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    receiverSocket.close()
-                }
+            } catch (_: Exception) {
             }
         }
     }
 
-    private fun receiveFile(receivedFile: cn.merlin.database.model.FileModel, port: Int) {
+    fun startDeviceCodeReceiver(detectedDeviceList: SnapshotStateList<DeviceViewModel>) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val receiverSocket = DatagramSocket(receiveDeviceCodePort)
+            val receiverBuffer = ByteArray(512)
+            val receiverPacket = DatagramPacket(receiverBuffer, receiverBuffer.size)
+            try {
+                while (true) {
+                    receiverSocket.receive(receiverPacket)
+                    val length =
+                        (receiverPacket.data[0].toInt() shl 8) or (receiverPacket.data[1].toInt() and 0xFF)
+                    val buffer = ByteArray(length)
+                    System.arraycopy(receiverPacket.data, 2, buffer, 0, length)
+                    val cnb = buffer.toString(Charsets.UTF_8)
+                    if (cnb.contains("receiveDevice")) {
+                        val device = Json.decodeFromString<Device>(
+                            cnb.substring(
+                                cnb.lastIndexOf(';') + 1,
+                                cnb.length
+                            )
+                        )
+                        if (!detectedDeviceIdentifierSet.contains(device.deviceIdentifier)) {
+                            detectedDeviceIdentifierSet.add(device.deviceIdentifier)
+                            detectedDeviceList.add(DeviceViewModel(device))
+                        }
+                    }
+                }
+            } catch (_: Exception) {
+            }
+        }
+    }
+
+    fun startMessageCodeReceiver() {
+        CoroutineScope(Dispatchers.IO).launch {
+            val receiverSocket = DatagramSocket(receiveMessageCodePort)
+            val receiverBuffer = ByteArray(512)
+            val receiverPacket = DatagramPacket(receiverBuffer, receiverBuffer.size)
+            try {
+                while (true) {
+                    receiverSocket.receive(receiverPacket)
+                    val length =
+                        (receiverPacket.data[0].toInt() shl 8) or (receiverPacket.data[1].toInt() and 0xFF)
+                    val buffer = ByteArray(length)
+                    System.arraycopy(receiverPacket.data, 2, buffer, 0, length)
+                    val cnb = buffer.toString(Charsets.UTF_8)
+                    if (cnb.contains("receiveFile")) {
+
+//                        receiveFile()
+                    }
+                }
+            } catch (_: Exception) {
+            }
+        }
+    }
+
+    private fun receiveFile(receivedFile: cn.merlin.bean.File, port: Int) {
         val packetSize = 10240
         var packetNumber = 0
+        val socket = DatagramSocket(port)
         try {
-            val socket = DatagramSocket(port)
             val receiveData = ByteArray(receivedFile.dataSize)
             val receivedPackets = mutableSetOf<Int>()
             while (receivedPackets.size < receivedFile.totalPackets) {
@@ -107,17 +145,18 @@ class Receiver {
             socket.close()
             receivedPort.remove(port)
         } catch (e: Exception) {
+            socket.close()
+            receivedPort.remove(port)
             println(e)
         }
     }
 
     private fun getFreePort(): Int {
-        var port = 20001
+        var port = 20002
         while (receivedPort.contains(port)) {
             port += 1
         }
         receivedPort.add(port)
         return port
     }
-
 }

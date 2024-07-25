@@ -1,4 +1,4 @@
-package cn.merlin.layout.theme
+package cn.merlin.ui.theme
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.TweenSpec
@@ -8,7 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
-import cn.merlin.utils.changeTheme
+import cn.merlin.tools.changeTheme
 import com.github.tkuenneth.nativeparameterstoreaccess.Dconf
 import com.github.tkuenneth.nativeparameterstoreaccess.Dconf.HAS_DCONF
 import com.github.tkuenneth.nativeparameterstoreaccess.MacOSDefaults
