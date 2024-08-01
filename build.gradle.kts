@@ -38,6 +38,9 @@ dependencies {
     //PreCompose导航栏
     implementation("moe.tlaster:precompose:1.5.11")
 
+    //ViewModel
+    implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0")
+
     //Exposed数据库
     implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
     implementation("org.jetbrains.exposed:exposed-crypt:$exposedVersion")

@@ -1,70 +1,81 @@
 package cn.merlin
 
-import androidx.compose.runtime.TestOnly
-import cn.merlin.bean.Device
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import java.net.DatagramPacket
-import java.net.DatagramSocket
-import java.net.InetAddress
+import androidx.compose.animation.core.*
+import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.unit.dp
+import kotlin.math.cos
+import kotlin.math.sin
 
-fun main() {
-    val test = Test()
-    test.startDetectCodeReceiver()
+@Composable
+fun PlanetOrbitAnimation(
+    modifier: Modifier = Modifier,
+    planetColor: Color = Color.Blue,
+    ringColor: Color = Color.Gray,
+    ringRadius: Float = 100f,
+    orbitDuration: Int = 4000
+) {
+    val infiniteTransition = rememberInfiniteTransition()
+    val angle by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(orbitDuration, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        )
+    )
+
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .size((ringRadius * 2).dp)
+            .clip(MaterialTheme.shapes.medium)
+            .background(Color.Transparent)
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            drawCircle(
+                color = ringColor,
+                radius = ringRadius,
+                style = Stroke(width = 2.dp.toPx())
+            )
+            val planetRadius = 10.dp.toPx()
+            val radians = Math.toRadians(angle.toDouble())
+            val x = (ringRadius * cos(radians)).toFloat() + size.width / 2
+            val y = (ringRadius * sin(radians)).toFloat() + size.height / 2
+
+            drawCircle(
+                color = planetColor,
+                radius = planetRadius,
+                center = Offset(x, y)
+            )
+        }
+    }
 }
 
-class Test() {
-    val currentDevice = Device(deviceName = "redmi k50", deviceIpAddress = "192.168.1.11")
-    private val receiveCommandCodePort = 29999
-    private val receiveDeviceCodePort = 30000
-    private val receiveMessageCodePort = 30001
-
-    fun startDetectCodeReceiver() {
-        while (true) {
-            val receiveSocket = DatagramSocket(receiveCommandCodePort)
-            val receiveBuffer = ByteArray(64)
-            val receivePacket = DatagramPacket(receiveBuffer, receiveBuffer.size)
-            try {
-                receiveSocket.receive(receivePacket)
-                receiveSocket.close()
-                val length = (receivePacket.data[0].toInt() shl 8) or (receivePacket.data[1].toInt() and 0xFF)
-                val buffer = ByteArray(length)
-                System.arraycopy(receivePacket.data, 2, buffer, 0, length)
-                val cnb = buffer.toString(Charsets.UTF_8)
-                if (cnb.contains("detectCode")) {
-                    try {
-                        val deviceJson = Json.encodeToString(currentDevice)
-                        val ipAddress = cnb.substring(cnb.lastIndexOf(';') + 1, cnb.length)
-                        if (ipAddress != currentDevice.deviceIpAddress) {
-                            val sendMessageArray = ByteArray(deviceJson.length + 16)
-                            sendMessageArray[0] = ((deviceJson.length + 14) shr 8).toByte()
-                            sendMessageArray[1] = (deviceJson.length + 14).toByte()
-                            System.arraycopy(
-                                "receiveDevice;".toByteArray(Charsets.UTF_8) + deviceJson.toByteArray(),
-                                0,
-                                sendMessageArray,
-                                2,
-                                sendMessageArray.size
-                            )
-                            val socket = DatagramSocket()
-                            val packet = DatagramPacket(
-                                sendMessageArray,
-                                deviceJson.length + 12,
-                                InetAddress.getByName(ipAddress),
-                                receiveDeviceCodePort
-                            )
-                            socket.send(packet)
-                            socket.close()
-                        }
-                    } catch (_: Exception) {
-                    }
-                }
-            } catch (_: Exception) {
-                receiveSocket.close()
-            }
-        }
+@Preview()
+@Composable
+fun PlanetOrbitAnimationPreview() {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+        PlanetOrbitAnimation(
+            ringRadius = 100f,
+            planetColor = Color.Blue,
+            ringColor = Color.Gray,
+            orbitDuration = 4000
+        )
     }
 }

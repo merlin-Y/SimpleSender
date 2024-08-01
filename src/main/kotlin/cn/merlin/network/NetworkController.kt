@@ -1,25 +1,19 @@
 package cn.merlin.network
 
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import cn.merlin.bean.Device
-import cn.merlin.bean.model.DeviceViewModel
-import cn.merlin.tools.detectedDeviceIdentifierSet
-import cn.merlin.tools.getWifiAddress
-import cn.merlin.tools.isWifiConnected
+import cn.merlin.tools.*
+import cn.merlin.tools.DeviceConfiguration.detectedDeviceIdentifierSet
+import cn.merlin.tools.DeviceConfiguration.getSavedList
 import kotlinx.coroutines.*
-import java.net.InetAddress
-import java.net.NetworkInterface
-import java.util.*
 
 class NetworkController {
-    val receiver = Receiver()
-    val sender = Sender()
-    val currentDevice = Device()
+    private val receiver = Receiver()
+    private val sender = Sender()
+    private val currentDevice = Device()
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
     private var networkJobs = mutableListOf<Job>()
 
-    suspend fun startNetworkControl(detectedDeviceList: SnapshotStateList<DeviceViewModel>) {
+    suspend fun startNetworkControl() {
         coroutineScope.launch {
             try{
                 while (true) {
@@ -31,11 +25,11 @@ class NetworkController {
                         currentDevice.deviceIdentifier = cn.merlin.tools.currentDevice.value.deviceIdentifier.value
                         currentDevice.deviceNickName = cn.merlin.tools.currentDevice.value.deviceNickName.value
                         if (networkJobs.isEmpty() && currentDevice.deviceIpAddress != "") {
-                            startJobs(detectedDeviceList)
+                            startJobs()
                         }
                     } else {
                         stopJobs()
-                        detectedDeviceList.clear()
+                        getSavedList().clear()
                         detectedDeviceIdentifierSet.clear()
                     }
                 }
@@ -43,10 +37,10 @@ class NetworkController {
         }
     }
 
-    private fun startJobs(detectedDeviceList: SnapshotStateList<DeviceViewModel>) {
+    private fun startJobs() {
         val sendCodeJob = coroutineScope.launch { sender.sendCodeRequest(currentDevice) }
         val receiveDetectCodeJob = coroutineScope.launch { receiver.startDetectCodeReceiver(currentDevice) }
-        val receiveDeviceCodeJob = coroutineScope.launch { receiver.startDeviceCodeReceiver(detectedDeviceList) }
+        val receiveDeviceCodeJob = coroutineScope.launch { receiver.startDeviceCodeReceiver() }
         val receiveMessageCodeJob = coroutineScope.launch { receiver.startMessageCodeReceiver() }
 
         networkJobs.addAll(listOf(sendCodeJob, receiveDetectCodeJob, receiveDeviceCodeJob, receiveMessageCodeJob))

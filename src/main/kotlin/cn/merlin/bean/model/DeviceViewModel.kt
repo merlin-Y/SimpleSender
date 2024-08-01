@@ -4,11 +4,12 @@ import androidx.compose.runtime.mutableStateOf
 import cn.merlin.bean.Device
 
 class DeviceViewModel(device: Device) {
-    var deviceId = mutableStateOf(device.deviceId)
-    var deviceName = mutableStateOf(device.deviceName)
-    var deviceIpAddress = mutableStateOf(device.deviceIpAddress)
-    var deviceNickName = mutableStateOf(device.deviceNickName)
-    var deviceIdentifier = mutableStateOf(device.deviceIdentifier)
-    var deviceType = mutableStateOf(device.deviceType)
-    var inListType = mutableStateOf(true)
+    val deviceId = mutableStateOf(device.deviceId)
+    val deviceName = mutableStateOf(device.deviceName)
+    val deviceIpAddress = mutableStateOf(device.deviceIpAddress)
+    val deviceNickName = mutableStateOf(device.deviceNickName)
+    val deviceIdentifier = mutableStateOf(device.deviceIdentifier)
+    val deviceType = mutableStateOf(device.deviceType)
+    val inListType = mutableStateOf(true)
+    val isConnected = mutableStateOf(true)
 }

@@ -1,10 +1,13 @@
 package cn.merlin.tools
 
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import cn.merlin.bean.Device
 import cn.merlin.bean.model.DeviceViewModel
 import cn.merlin.database.SenderDB
+import cn.merlin.tools.DeviceConfiguration.getSavedList
+import cn.merlin.tools.DeviceConfiguration.savedDeviceIdentifierSet
 import cn.merlin.ui.theme.isInDarkMode
 import cn.merlin.ui.theme.isSystemInDarkTheme
 import kotlinx.coroutines.*
@@ -25,8 +28,8 @@ val localDeviceName = mutableStateOf("")
 val changeTheme = mutableStateOf(0)
 val isWifiConnected = mutableStateOf(false)
 val data = Properties()
-val detectedDeviceIdentifierSet: MutableSet<String> = mutableSetOf()
-val savedDeviceIdentifierSet: MutableSet<String> = mutableSetOf()
+val isDeviceFlushed = mutableStateOf(false)
+val isSavedFlushed = mutableStateOf(false)
 
 fun getUserProfile(): String {
     var userProfile = ""
@@ -81,8 +84,7 @@ fun getWifiAddress(): Boolean {
                 while (inetAddresses.hasMoreElements()) {
                     val inetAddress = inetAddresses.nextElement()
                     if (!inetAddress.isLoopbackAddress && inetAddress.hostAddress.contains("192.168.")) {
-                        if(inetAddress.hostAddress != "")   isWifiConnected.value = true
-                        else   isWifiConnected.value = false
+                        isWifiConnected.value = inetAddress.hostAddress != ""
                         currentDevice.value.deviceIpAddress.value = inetAddress.hostAddress
                         return true
                     }
@@ -95,14 +97,15 @@ fun getWifiAddress(): Boolean {
     }
 }
 
-fun getSavedDevice(savedDeviceList: SnapshotStateList<DeviceViewModel>, senderDB: SenderDB) {
-    if (savedDeviceList.isNotEmpty()) return
+fun getSavedDevice(senderDB: SenderDB) {
+    if (getSavedList().isNotEmpty()) return
     CoroutineScope(Dispatchers.IO).launch {
         val deviceList = senderDB.selectAllDevice()
         deviceList.forEach {
-            savedDeviceList.add(DeviceViewModel(it))
+            getSavedList().add(DeviceViewModel(it))
             savedDeviceIdentifierSet.add(it.deviceIdentifier)
         }
+        isSavedFlushed.value = !isSavedFlushed.value
     }
 }
 
@@ -127,5 +130,14 @@ fun detectDarkMode() {
             delay(TIME_BETWEEN.toLong())
             isInDarkMode.value = isSystemInDarkTheme()
         }
+    }
+}
+
+fun getDeviceWidth(device: DeviceViewModel): Dp {
+    return when(device.deviceType.value){
+        "desktop" -> 260.dp
+        "laptop" -> 190.dp
+        "phone" -> 120.dp
+        else -> 120.dp
     }
 }

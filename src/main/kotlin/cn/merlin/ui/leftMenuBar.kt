@@ -11,8 +11,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -25,6 +24,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cn.merlin.bean.model.DeviceViewModel
+import cn.merlin.tools.DeviceConfiguration.getSavedList
+import cn.merlin.tools.isSavedFlushed
 import cn.merlin.ui.pages.currentDevice
 import cn.merlin.ui.theme.TWEEN_DURATION
 import kotlinx.coroutines.CoroutineScope
@@ -35,10 +36,16 @@ import moe.tlaster.precompose.navigation.Navigator
 @Composable
 fun leftMenuBar(
     width: Dp,
-    navigator: Navigator,
-    localDeviceList: SnapshotStateList<DeviceViewModel>
+    navigator: Navigator
 ) {
     val leftButtonMenuHeight = animateDpAsState(if (!isMenuBarPickUp.value) 455.dp else 500.dp, TweenSpec(300))
+    val savedDeviceListView: SnapshotStateList<DeviceViewModel> = remember{ mutableStateListOf()  }
+
+    LaunchedEffect(isSavedFlushed.value){
+        getSavedList().forEach {
+            savedDeviceListView.add(it)
+        }
+    }
 
     Surface(
         modifier = Modifier.size(width, 700.dp),
@@ -75,7 +82,7 @@ fun leftMenuBar(
                     .padding(bottom = 20.dp),
                 horizontalAlignment = Alignment.Start
             ) {
-                localDeviceList.forEach{
+                getSavedList().forEach{
                     item {
                         ListItem(it,navigator)
                     }

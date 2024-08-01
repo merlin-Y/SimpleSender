@@ -2,18 +2,17 @@ package cn.merlin.network
 
 import cn.merlin.bean.Device
 import cn.merlin.bean.File
-import cn.merlin.bean.model.DeviceViewModel
-import kotlinx.coroutines.*
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
-import java.net.*
-import kotlin.math.ceil
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import java.net.DatagramPacket
+import java.net.DatagramSocket
+import java.net.InetAddress
 
-val detectedDeviceIdentifierList: MutableList<String> = mutableListOf()
 
 class Sender {
     private val sendRequestPort = 19999
-    private var currentDevice = Device()
 
     suspend fun sendCodeRequest(currentDevice: Device) {
         CoroutineScope(Dispatchers.IO).launch {

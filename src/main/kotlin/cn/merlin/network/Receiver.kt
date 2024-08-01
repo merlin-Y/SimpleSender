@@ -1,10 +1,11 @@
 package cn.merlin.network
 
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import cn.merlin.bean.Device
 import cn.merlin.bean.model.DeviceViewModel
-import cn.merlin.tools.detectedDeviceIdentifierSet
+import cn.merlin.tools.DeviceConfiguration.detectedDeviceIdentifierSet
+import cn.merlin.tools.DeviceConfiguration.getDetectedList
 import cn.merlin.tools.getUserProfile
+import cn.merlin.tools.isDeviceFlushed
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -70,7 +71,7 @@ class Receiver {
         }
     }
 
-    fun startDeviceCodeReceiver(detectedDeviceList: SnapshotStateList<DeviceViewModel>) {
+    fun startDeviceCodeReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             val receiverSocket = DatagramSocket(receiveDeviceCodePort)
             val receiverBuffer = ByteArray(512)
@@ -92,7 +93,8 @@ class Receiver {
                         )
                         if (!detectedDeviceIdentifierSet.contains(device.deviceIdentifier)) {
                             detectedDeviceIdentifierSet.add(device.deviceIdentifier)
-                            detectedDeviceList.add(DeviceViewModel(device))
+                            getDetectedList()?.add(DeviceViewModel(device))
+                            isDeviceFlushed.value = !isDeviceFlushed.value
                         }
                     }
                 }
