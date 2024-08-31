@@ -12,4 +12,15 @@ class DeviceViewModel(device: Device) {
     val deviceType = mutableStateOf(device.deviceType)
     val inListType = mutableStateOf(true)
     val isConnected = mutableStateOf(true)
+
+    fun toDevice(): Device{
+        return Device(
+            deviceId.value,
+            deviceName.value,
+            deviceIpAddress.value,
+            deviceNickName.value,
+            deviceIdentifier.value,
+            deviceType.value
+        )
+    }
 }

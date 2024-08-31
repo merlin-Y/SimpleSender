@@ -1,17 +1,25 @@
 package cn.merlin.network
 
+import androidx.compose.runtime.MutableState
 import cn.merlin.bean.Device
+import cn.merlin.bean.model.DeviceViewModel
 import cn.merlin.tools.*
 import cn.merlin.tools.DeviceConfiguration.detectedDeviceIdentifierSet
-import cn.merlin.tools.DeviceConfiguration.getSavedList
+import cn.merlin.tools.DeviceConfiguration.getDetectedList
 import kotlinx.coroutines.*
+import moe.tlaster.precompose.navigation.Navigator
 
-class NetworkController {
+class NetworkController(val navigator: Navigator) {
     private val receiver = Receiver()
     private val sender = Sender()
     private val currentDevice = Device()
     private val coroutineScope = CoroutineScope(Dispatchers.Default)
     private var networkJobs = mutableListOf<Job>()
+
+
+    suspend fun sendRequestCodeToSelectedDevice(device: DeviceViewModel): RequestCode{
+        return sender.sendRequestCodeToSelectedDevice(currentDevice,device)
+    }
 
     suspend fun startNetworkControl() {
         coroutineScope.launch {
@@ -29,7 +37,7 @@ class NetworkController {
                         }
                     } else {
                         stopJobs()
-                        getSavedList().clear()
+                        getDetectedList().clear()
                         detectedDeviceIdentifierSet.clear()
                     }
                 }
@@ -39,11 +47,10 @@ class NetworkController {
 
     private fun startJobs() {
         val sendCodeJob = coroutineScope.launch { sender.sendCodeRequest(currentDevice) }
-        val receiveDetectCodeJob = coroutineScope.launch { receiver.startDetectCodeReceiver(currentDevice) }
-        val receiveDeviceCodeJob = coroutineScope.launch { receiver.startDeviceCodeReceiver() }
-        val receiveMessageCodeJob = coroutineScope.launch { receiver.startMessageCodeReceiver() }
+        val sendKeepJob = coroutineScope.launch { sender.deviceConnectionKeeper(currentDevice) }
+        val receiveCommandCodeJob = coroutineScope.launch { receiver.startCommandCodeReceiver(currentDevice, navigator) }
 
-        networkJobs.addAll(listOf(sendCodeJob, receiveDetectCodeJob, receiveDeviceCodeJob, receiveMessageCodeJob))
+        networkJobs.addAll(listOf(sendCodeJob, sendKeepJob, receiveCommandCodeJob))
     }
 
     private fun stopJobs() {

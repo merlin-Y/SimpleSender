@@ -28,6 +28,9 @@ dependencies {
     //material3
     implementation("org.jetbrains.compose.material3:material3-desktop:1.6.11")
 
+    //paging分页
+    implementation("app.cash.paging:paging-compose-common:3.3.0-alpha02-0.5.1")
+
     //协程
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.8.0")

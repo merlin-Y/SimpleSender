@@ -1,4 +1,4 @@
-package cn.merlin.ui.dialog
+package cn.merlin.ui.dialogs
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding

@@ -16,11 +16,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cn.merlin.ui.dialog.ChangeDeviceNameDialog
+import cn.merlin.ui.dialogs.ChangeDeviceNameDialog
 import cn.merlin.tools.changeTheme
-import cn.merlin.tools.localDeviceName
 import cn.merlin.tools.updateSettings
-import cn.merlin.ui.components.TextInputFieldTwo
 
 @Composable
 fun settings(

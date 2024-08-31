@@ -48,7 +48,7 @@ fun App( menuBarWidth: Dp, windowState: WindowState) {
         val navigator = rememberNavigator()
         val messageList: SnapshotStateList<MessageVIewModel> = mutableStateListOf()
         val senderDB = SenderDB()
-        val networkController = NetworkController()
+        val networkController = NetworkController(navigator)
 
         LaunchedEffect(Unit){
             withContext(Dispatchers.IO){
@@ -79,7 +79,7 @@ fun App( menuBarWidth: Dp, windowState: WindowState) {
                                 route = "/message",
                                 navTransition = NavTransition()
                             ) {
-                                message(900.dp - menuBarWidth, 700.dp,senderDB,messageList)
+                                message(900.dp - menuBarWidth, 700.dp,senderDB, networkController)
                             }
                             scene(
                                 route = "/detect",

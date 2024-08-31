@@ -4,11 +4,9 @@ import androidx.compose.runtime.mutableStateOf
 import cn.merlin.bean.Message
 
 class MessageVIewModel(message: Message) {
-    var messageId = mutableStateOf(message.messageId)
-    var messageType = mutableStateOf(message.messageType)
-    var messageContent = mutableStateOf(message.messageContent)
-    var messageSenderIpAddress = mutableStateOf(message.messageSenderIpAddress)
-    var messageReceiverIpAddress = mutableStateOf(message.messageReceiverIpAddress)
-    var messageSenderIdentifier = mutableStateOf(message.messageSenderIdentifier)
-    var messageReceiverIdentifier = mutableStateOf(message.messageReceiverIdentifier)
+    val messageId = mutableStateOf(message.messageId)
+    val messageContent = mutableStateOf(message.messageContent)
+    val messageSenderIdentifier = mutableStateOf(message.messageSenderIdentifier)
+    val messageReceiverIdentifier = mutableStateOf(message.messageReceiverIdentifier)
+    val messageReceived = mutableStateOf(false)
 }

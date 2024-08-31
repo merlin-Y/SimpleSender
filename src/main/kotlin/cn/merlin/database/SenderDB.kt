@@ -28,6 +28,7 @@ class SenderDB {
     fun insertDevice(device: cn.merlin.bean.model.DeviceViewModel): Int {
         var deviceId: Int = -1
         transaction {
+            addLogger(StdOutSqlLogger)
             deviceId = DeviceModel.insert {
                 it[deviceName] = device.deviceName.value
                 it[deviceIpAddress] = device.deviceIpAddress.value
@@ -42,6 +43,7 @@ class SenderDB {
     fun selectAllDevice(): MutableList<Device> {
         val devices: MutableList<Device> = mutableListOf()
         transaction {
+            addLogger(StdOutSqlLogger)
             val query = DeviceModel.selectAll()
             query.forEach {
                 val device = Device()
@@ -60,6 +62,7 @@ class SenderDB {
     fun selectDeviceById(deviceId: Int): Device {
         val device = Device()
         transaction {
+            addLogger(StdOutSqlLogger)
             val query = DeviceModel.select(DeviceModel.deviceId).where { DeviceModel.deviceId eq deviceId }
             query.forEach {
                 device.deviceIpAddress = it[deviceIpAddress]
@@ -75,6 +78,7 @@ class SenderDB {
     fun deleteDeviceById(deviceId: Int): Int {
         var result: Int = -1
         transaction {
+            addLogger(StdOutSqlLogger)
             result = DeviceModel.deleteWhere { DeviceModel.deviceId eq deviceId }
         }
         return result
@@ -83,11 +87,9 @@ class SenderDB {
     fun insertMessage(message: cn.merlin.bean.model.MessageVIewModel): Int {
         var messageId: Int = -1
         transaction {
+            addLogger(StdOutSqlLogger)
             messageId = MessageModel.insert {
-                it[messageType] = message.messageType.value
                 it[messageContent] = message.messageContent.value
-                it[messageSenderIpAddress] = message.messageSenderIpAddress.value
-                it[messageReceiverIpAddress] = message.messageReceiverIpAddress.value
                 it[messageSenderIdentifier] = message.messageSenderIdentifier.value
                 it[messageReceiverIdentifier] = message.messageReceiverIdentifier.value
             } get MessageModel.messageId
@@ -98,14 +100,12 @@ class SenderDB {
     fun selectAllMessage(): MutableList<Message> {
         val messages: MutableList<Message> = mutableListOf()
         transaction {
+            addLogger(StdOutSqlLogger)
             val query = MessageModel.selectAll()
             query.forEach {
                 val message = Message(
                     it[MessageModel.messageId],
-                    it[MessageModel.messageType],
                     it[MessageModel.messageContent],
-                    it[MessageModel.messageSenderIpAddress],
-                    it[MessageModel.messageReceiverIpAddress],
                     it[MessageModel.messageSenderIdentifier],
                     it[MessageModel.messageReceiverIdentifier]
                 )
@@ -118,6 +118,7 @@ class SenderDB {
     fun selectMessageById(messageId: Int): Query? {
         var query: Query? = null
         transaction {
+            addLogger(StdOutSqlLogger)
             query = MessageModel.select(MessageModel.messageId).where { MessageModel.messageId eq messageId }
         }
         return query
@@ -126,6 +127,7 @@ class SenderDB {
     fun deleteMessageById(messageId: Int): Int {
         var result: Int = -1
         transaction {
+            addLogger(StdOutSqlLogger)
             result = MessageModel.deleteWhere { MessageModel.messageId eq messageId }
         }
         return result

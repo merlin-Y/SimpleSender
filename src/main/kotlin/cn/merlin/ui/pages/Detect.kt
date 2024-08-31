@@ -39,6 +39,7 @@ fun detect(
     val detectedDeviceListView: SnapshotStateList<SnapshotStateList<DeviceViewModel>> =
         remember { mutableStateListOf(mutableStateListOf()) }
     val detectedDeviceListViewIdentifier: MutableList<String> = remember { mutableListOf() }
+    val infiniteTransition = rememberInfiniteTransition()
 
     LaunchedEffect(isDeviceFlushed.value) {
         CoroutineScope(Dispatchers.Default).launch {
@@ -46,12 +47,16 @@ fun detect(
                 if (!detectedDeviceListViewIdentifier.contains(device.deviceIdentifier.value)) {
                     detectedDeviceListViewIdentifier.add(device.deviceIdentifier.value)
                     if (device.isConnected.value) setOnAvailablePosition(width, device, detectedDeviceListView)
-                } else if (!device.isConnected.value) {
-                    detectedDeviceListView.forEach {
-                        for (d in it) {
-                            if (d.deviceIdentifier.value == device.deviceIdentifier.value) {
-                                it.remove(d)
-                            }
+                } else {
+                    if (device.isConnected.value) {
+                        // 防止重复添加
+                        if (!detectedDeviceListView.any { it.any { d -> d.deviceIdentifier.value == device.deviceIdentifier.value } }) {
+                            setOnAvailablePosition(width, device, detectedDeviceListView)
+                        }
+                    } else {
+                        // 移除断开连接的设备
+                        detectedDeviceListView.forEach { list ->
+                            list.removeAll { d -> d.deviceIdentifier.value == device.deviceIdentifier.value }
                         }
                     }
                 }
@@ -73,13 +78,13 @@ fun detect(
                 lineHeight = 32.sp
             )
             Spacer(modifier = Modifier.background(MaterialTheme.colorScheme.tertiary).height(2.dp).width(width))
-            DeviceListViewGrid(detectedDeviceListView)
+            DeviceListViewGrid(detectedDeviceListView, infiniteTransition)
         }
     }
 }
 
 @Composable
-fun DeviceListViewGrid(detectedDeviceListView: SnapshotStateList<SnapshotStateList<DeviceViewModel>>) {
+fun DeviceListViewGrid(detectedDeviceListView: SnapshotStateList<SnapshotStateList<DeviceViewModel>>, infiniteTransition: InfiniteTransition) {
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         items(detectedDeviceListView) {
             Row(
@@ -87,7 +92,24 @@ fun DeviceListViewGrid(detectedDeviceListView: SnapshotStateList<SnapshotStateLi
                 modifier = Modifier.fillMaxWidth()
             ) {
                 it.forEach {
-                    DeviceCard(it)
+                    val initValue = (0L..360L).random()
+                    val angle1 = infiniteTransition.animateFloat(
+                        initialValue = initValue.toFloat(),
+                        targetValue = initValue.toFloat() + 360f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(30000, easing = LinearEasing),
+                            repeatMode = RepeatMode.Restart
+                        )
+                    )
+                    val angle2 = infiniteTransition.animateFloat(
+                        initialValue = initValue.toFloat() + 180f,
+                        targetValue = initValue.toFloat() + 180f + 360f,
+                        animationSpec = infiniteRepeatable(
+                            animation = tween(30000, easing = LinearEasing),
+                            repeatMode = RepeatMode.Restart
+                        )
+                    )
+                    DeviceCard(it, angle1, angle2)
                 }
             }
         }
@@ -95,29 +117,11 @@ fun DeviceListViewGrid(detectedDeviceListView: SnapshotStateList<SnapshotStateLi
 }
 
 @Composable
-fun DeviceCard(device: DeviceViewModel) {
-    val infiniteTransition = rememberInfiniteTransition()
-    val initValue = (0L..360L).random()
-    val angle1 by infiniteTransition.animateFloat(
-        initialValue = initValue.toFloat(),
-        targetValue = initValue.toFloat() + 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(30000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        )
-    )
-    val angle2 by infiniteTransition.animateFloat(
-        initialValue = initValue.toFloat() + 180f,
-        targetValue = initValue.toFloat() + 180f +  360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(30000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        )
-    )
+fun DeviceCard(device: DeviceViewModel, angle1: State<Float>, angle2: State<Float>) {
     val color = MaterialTheme.colorScheme.onSecondaryContainer
     Button(
         shape = CircleShape,
-        modifier = when(device.deviceType.value){
+        modifier = when (device.deviceType.value) {
             "desktop" -> Modifier.padding(30.dp).size(200.dp)
             "laptop" -> Modifier.padding(20.dp).size(150.dp)
             "phone" -> Modifier.padding(10.dp).size(100.dp)
@@ -133,13 +137,13 @@ fun DeviceCard(device: DeviceViewModel) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.fillMaxSize()
-        ){
+        ) {
             Canvas(modifier = Modifier.fillMaxSize()) {
                 val planetRadius = 3.dp.toPx()
-                val radians1 = Math.toRadians(angle1.toDouble())
+                val radians1 = Math.toRadians(angle1.value.toDouble())
                 val x1 = (70f * cos(radians1)).toFloat() + size.width / 2
                 val y1 = (70f * sin(radians1)).toFloat() + size.height / 2
-                val radians2 = Math.toRadians(angle2.toDouble())
+                val radians2 = Math.toRadians(angle2.value.toDouble())
                 val x2 = (70f * cos(radians2)).toFloat() + size.width / 2
                 val y2 = (70f * sin(radians2)).toFloat() + size.height / 2
                 drawCircle(

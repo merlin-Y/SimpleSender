@@ -5,8 +5,8 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import cn.merlin.bean.model.DeviceViewModel
 
 object DeviceConfiguration {
-    private var detectedDeviceList: SnapshotStateList<DeviceViewModel> = mutableStateListOf()
-    private var savedDeviceList: SnapshotStateList<DeviceViewModel> = mutableStateListOf()
+    private val detectedDeviceList: SnapshotStateList<DeviceViewModel> = mutableStateListOf()
+    private val savedDeviceList: SnapshotStateList<DeviceViewModel> = mutableStateListOf()
     val savedDeviceIdentifierSet: MutableSet<String> = mutableSetOf()
     val detectedDeviceIdentifierSet: MutableSet<String> = mutableSetOf()
 

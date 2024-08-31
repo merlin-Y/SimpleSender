@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cn.merlin.bean.model.DeviceViewModel
 import cn.merlin.tools.DeviceConfiguration.getSavedList
+import cn.merlin.tools.currentPage
 import cn.merlin.tools.isSavedFlushed
 import cn.merlin.ui.pages.currentDevice
 import cn.merlin.ui.theme.TWEEN_DURATION
@@ -118,13 +119,22 @@ fun MenuItem(
         onClick = {
             when (text) {
                 "搜索设备" -> {
-                    navigator.navigate("/detect")
+                    if(currentPage.value != "detect") {
+                        currentPage.value = "detect"
+                        navigator.navigate("/detect")
+                    }
                 }
                 "系统设置" -> {
-                    navigator.navigate("/settings")
+                    if(currentPage.value != "settings") {
+                        currentPage.value = "settings"
+                        navigator.navigate("/settings")
+                    }
                 }
                 else -> {
-                    navigator.navigate("/history")
+                    if(currentPage.value != "history"){
+                        currentPage.value = "history"
+                        navigator.navigate("/history")
+                    }
                 }
             }
         }
@@ -187,8 +197,10 @@ fun ListItem(
         colors = IconButtonDefaults.iconButtonColors(containerColor = animateColorAsState(buttonColor, TweenSpec(TWEEN_DURATION)).value),
         shape = MaterialTheme.shapes.extraSmall,
         onClick = {
-
-            navigator.navigate("/message")
+            if(currentPage.value != "message")     {
+                currentPage.value = "message"
+                navigator.navigate("/message")
+            }
             currentDevice.value = deviceModel
         }
     ) {

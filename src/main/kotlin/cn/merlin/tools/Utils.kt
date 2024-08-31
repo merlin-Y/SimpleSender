@@ -1,10 +1,14 @@
 package cn.merlin.tools
 
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import cn.merlin.bean.Device
+import cn.merlin.bean.Message
 import cn.merlin.bean.model.DeviceViewModel
+import cn.merlin.bean.model.MessageVIewModel
+import cn.merlin.bean.model.RequestViewModel
 import cn.merlin.database.SenderDB
 import cn.merlin.tools.DeviceConfiguration.getSavedList
 import cn.merlin.tools.DeviceConfiguration.savedDeviceIdentifierSet
@@ -21,15 +25,23 @@ import java.util.UUID
 
 const val TIME_BETWEEN = 500
 val currentDevice = mutableStateOf(DeviceViewModel(Device(deviceName = "我的设备")))
+val currentPage = mutableStateOf("detect")
 val resourcesPath = mutableStateOf("")
 val settingsPath = mutableStateOf("")
 val databasePath = mutableStateOf("")
 val localDeviceName = mutableStateOf("")
 val changeTheme = mutableStateOf(0)
+val alwaysAccessRequest = mutableStateOf(1)
 val isWifiConnected = mutableStateOf(false)
 val data = Properties()
 val isDeviceFlushed = mutableStateOf(false)
 val isSavedFlushed = mutableStateOf(false)
+val isRequestListFlushed = mutableStateOf(false)
+val receivedPort: MutableSet<Int> = mutableSetOf()
+val messageFileListMap: MutableMap<String,MutableList<String>> = mutableStateMapOf()
+val messageListMap: MutableMap<String, String> = mutableStateMapOf()
+val receiveRequestList: SnapshotStateList<RequestViewModel> = mutableStateListOf()
+val receiveFileJobs: MutableMap<String, Job> = mutableStateMapOf()
 
 fun getUserProfile(): String {
     var userProfile = ""
@@ -63,9 +75,8 @@ fun createAllResourcesFiles() {
 fun getAllSettings() {
     data.load(FileInputStream(settingsPath.value))
     if (!data.containsKey("IsInitialed")) initializeProperties(data)
-    if (data["changeTheme"] == "0") changeTheme.value = 0
-    else if (data["changeTheme"] == "1") changeTheme.value = 1
-    else changeTheme.value = 2
+    changeTheme.value = data["changeTheme"].toString().toInt()
+    alwaysAccessRequest.value = data["alwaysAccessRequest"].toString().toInt()
     currentDevice.value.deviceIdentifier.value = data["localDeviceIdentifier"].toString()
     currentDevice.value.deviceNickName.value = data["localDeviceName"].toString()
 }
@@ -117,6 +128,7 @@ fun updateSettings(key: String, value: String) {
 fun initializeProperties(data: Properties) {
     data["IsInitialed"] = "1"
     data["changeTheme"] = "0"
+    data["alwaysAccessRequest"] = "1"
     data["localDeviceIdentifier"] = UUID.randomUUID().toString()
     data["localDeviceName"] = "-1"
     data["userProfile"] = getUserProfile()
@@ -140,4 +152,18 @@ fun getDeviceWidth(device: DeviceViewModel): Dp {
         "phone" -> 120.dp
         else -> 120.dp
     }
+}
+
+@Synchronized
+fun getFreePort(): Int {
+    var port = 20000
+    while (receivedPort.contains(port)) {
+        port += 1
+    }
+    receivedPort.add(port)
+    return port
+}
+
+fun freePort(port: Int){
+    if(receivedPort.contains(port))     receivedPort.remove(port)
 }
