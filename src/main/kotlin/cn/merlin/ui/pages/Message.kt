@@ -5,6 +5,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.draganddrop.dragAndDropTarget
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -108,37 +109,37 @@ fun message(
             Spacer(modifier = Modifier.background(MaterialTheme.colorScheme.tertiary).height(2.dp).width(width))
             LazyColumn(
                 modifier = Modifier.padding(0.dp).weight(5f).width(width).padding(top = 10.dp)
-                    .border(1.dp, isDraggingColore.value)
-                    .onExternalDrag(
-                        onDragStart = {
-                            isDragging = true
-                        },
-                        onDragExit = {
-                            isDragging = false
-                        },
-                        onDrag = {
-
-                        },
-                        onDrop = { state ->
-                            val dragData = state.dragData
-                            if (dragData is DragData.Image) {
-                                println(dragData.readImage().toString())
-                            } else if (dragData is DragData.FilesList && isDragging) {
-                                dragData.readFiles().first().let {
-                                    val message = Message(
-                                        messageSenderIdentifier = currentDevice.value.deviceIdentifier.value,
-                                        messageReceiverIdentifier = currentDevice.value.deviceIdentifier.value,
-                                        messageContent = it.substring(6)
-                                    )
-                                    println(message.messageContent)
-                                    messageListView.add(MessageVIewModel(message))
-                                    senderDB.insertMessage(MessageVIewModel(message))
-                                    println(it)
-                                }
-                            }
-                            isDragging = false
-                        }
-                    ),
+                    .border(1.dp, isDraggingColore.value),
+//                    .dragAndDropTarget(
+//                        onDragStart = {
+//                            isDragging = true
+//                        },
+//                        onDragExit = {
+//                            isDragging = false
+//                        },
+//                        onDrag = {
+//
+//                        },
+//                        onDrop = { state ->
+//                            val dragData = state.dragData
+//                            if (dragData is DragData.Image) {
+//                                println(dragData.readImage().toString())
+//                            } else if (dragData is DragData.FilesList && isDragging) {
+//                                dragData.readFiles().first().let {
+//                                    val message = Message(
+//                                        messageSenderIdentifier = currentDevice.value.deviceIdentifier.value,
+//                                        messageReceiverIdentifier = currentDevice.value.deviceIdentifier.value,
+//                                        messageContent = it.substring(6)
+//                                    )
+//                                    println(message.messageContent)
+//                                    messageListView.add(MessageVIewModel(message))
+//                                    senderDB.insertMessage(MessageVIewModel(message))
+//                                    println(it)
+//                                }
+//                            }
+//                            isDragging = false
+//                        }
+//                    ),
                 verticalArrangement = Arrangement.spacedBy(5.dp),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 reverseLayout = true
@@ -156,35 +157,35 @@ fun message(
                 modifier = Modifier
                     .height(160.dp)
                     .fillMaxWidth()
-                    .border(1.dp, isDraggingColore.value)
-                    .onExternalDrag(
-                        onDragStart = {
-                            isDragging = true
-                        },
-                        onDragExit = {
-                            isDragging = false
-                        },
-                        onDrag = {
-
-                        },
-                        onDrop = { state ->
-                            val dragData = state.dragData
-                            if (dragData is DragData.Image) {
-                                println(dragData.readImage().toString())
-                            } else if (dragData is DragData.FilesList && isDragging) {
-                                dragData.readFiles().first().let {
-                                    val file = it.substring(6)
-                                    if(!messageFileListMap.contains(currentDevice.value.deviceIdentifier.value)){
-                                        val list = mutableListOf(file)
-                                        messageFileListMap.put(currentDevice.value.deviceIdentifier.value,list)
-                                    }else{
-                                        messageFileListMap[currentDevice.value.deviceIdentifier.value]!!.add(file)
-                                    }
-                                }
-                            }
-                            isDragging = false
-                        }
-                    ),
+                    .border(1.dp, isDraggingColore.value),
+//                    .onExternalDrag(
+//                        onDragStart = {
+//                            isDragging = true
+//                        },
+//                        onDragExit = {
+//                            isDragging = false
+//                        },
+//                        onDrag = {
+//
+//                        },
+//                        onDrop = { state ->
+//                            val dragData = state.dragData
+//                            if (dragData is DragData.Image) {
+//                                println(dragData.readImage().toString())
+//                            } else if (dragData is DragData.FilesList && isDragging) {
+//                                dragData.readFiles().first().let {
+//                                    val file = it.substring(6)
+//                                    if(!messageFileListMap.contains(currentDevice.value.deviceIdentifier.value)){
+//                                        val list = mutableListOf(file)
+//                                        messageFileListMap.put(currentDevice.value.deviceIdentifier.value,list)
+//                                    }else{
+//                                        messageFileListMap[currentDevice.value.deviceIdentifier.value]!!.add(file)
+//                                    }
+//                                }
+//                            }
+//                            isDragging = false
+//                        }
+//                    ),
                 value = inputText.value,
                 onValueChange = {
                     inputText.value = it

@@ -34,6 +34,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import moe.tlaster.precompose.PreComposeApp
 import moe.tlaster.precompose.navigation.NavHost
+import moe.tlaster.precompose.navigation.Navigator
 import moe.tlaster.precompose.navigation.rememberNavigator
 import moe.tlaster.precompose.navigation.transition.NavTransition
 
@@ -65,7 +66,7 @@ fun App( menuBarWidth: Dp, windowState: WindowState) {
             modifier = Modifier.background(MaterialTheme.colorScheme.primary)
         ) {
             Column {
-                TittleBar("Icons/PaperPlane.png", "SimpleSender", windowState)
+                TittleBar("Icons/PaperPlane.png", "SimpleSender", networkController, windowState)
                 Row {
                     leftMenuBar(menuBarWidth, navigator)/*  MenuBarWidth */
                     Surface {

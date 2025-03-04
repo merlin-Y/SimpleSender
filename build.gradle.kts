@@ -5,8 +5,8 @@ val exposedVersion = "0.48.0"
 plugins {
     kotlin("jvm")
     id("org.jetbrains.compose")
+    id("org.jetbrains.kotlin.plugin.compose")
     kotlin("plugin.serialization") version "1.9.20"
-
 }
 
 group = "cn.merlin"
@@ -25,7 +25,6 @@ dependencies {
     // With compose.desktop.common you will also lose @Preview functionality
     implementation(compose.desktop.currentOs)
 
-    //material3
     implementation("org.jetbrains.compose.material3:material3-desktop:1.6.11")
 
     //paging分页
@@ -70,11 +69,11 @@ compose.desktop {
         mainClass = "MainKt"
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb,TargetFormat.Exe)
-            packageName = "SimpleSender"
+            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            packageName = "SimpleSender-multiplatform"
             packageVersion = "1.0.0"
             modules("java.compiler", "java.instrument" , "java.sql", "jdk.unsupported", "java.naming")
-            appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
+//            appResourcesRootDir.set(project.layout.projectDirectory.dir("resources"))
         }
     }
 }

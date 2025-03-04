@@ -21,7 +21,7 @@ class NetworkController(val navigator: Navigator) {
         return sender.sendRequestCodeToSelectedDevice(currentDevice,device)
     }
 
-    suspend fun startNetworkControl() {
+    fun startNetworkControl() {
         coroutineScope.launch {
             try{
                 while (true) {
@@ -53,7 +53,7 @@ class NetworkController(val navigator: Navigator) {
         networkJobs.addAll(listOf(sendCodeJob, sendKeepJob, receiveCommandCodeJob))
     }
 
-    private fun stopJobs() {
+    fun stopJobs() {
         networkJobs.forEach { it.cancel() }
         networkJobs.clear()
     }
